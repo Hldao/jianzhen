@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>射箭圈 · 分享卡片</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: #0F1117;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px 80px;
+  gap: 48px;
+}
+
+h1 {
+  color: rgba(255,255,255,.45);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.cards-row {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.card-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.card-label {
+  font-size: 12px;
+  color: rgba(255,255,255,.3);
+  letter-spacing: 1px;
+}
+
+/* ── 卡片基础 ── */
+.share-card {
+  width: 375px;
+  height: 560px;
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0,0,0,.6);
+}
+
+/* ── 背景：靶面 SVG + 渐变 ── */
+.card-bg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.card-bg svg {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0; left: 0;
+}
+.card-bg-gradient {
+  position: absolute;
+  inset: 0;
+}
+
+/* ── 照片占位（实际使用时替换为用户照片） ── */
+.photo-hint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -65%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  opacity: .22;
+  pointer-events: none;
+}
+.photo-hint svg { color: #fff; }
+.photo-hint span {
+  font-size: 12px;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+/* ── App 水印 ── */
+.card-watermark {
+  position: absolute;
+  top: 22px;
+  left: 0; right: 0;
+  display: flex;
+  justify-content: center;
+}
+.wm-inner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,.12);
+  backdrop-filter: blur(8px);
+  border-radius: 20px;
+  padding: 5px 14px;
+}
+.wm-logo { font-size: 14px; }
+.wm-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255,255,255,.8);
+  letter-spacing: .5px;
+}
+
+/* ── 成就徽章 ── */
+.achievement-badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.badge-pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 20px;
+  border-radius: 40px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+.badge-icon { font-size: 16px; }
+
+/* ── 底部信息区 ── */
+.card-footer {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 28px 28px 28px;
+}
+.score-line {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 10px;
+  line-height: 1;
+}
+.score-main {
+  font-size: 72px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -3px;
+}
+.score-unit {
+  font-size: 22px;
+  font-weight: 700;
+  color: rgba(255,255,255,.55);
+  margin-bottom: 6px;
+}
+.score-delta {
+  font-size: 14px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-left: 4px;
+  margin-bottom: 6px;
+}
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+.meta-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.3);
+}
+.meta-item {
+  font-size: 13px;
+  color: rgba(255,255,255,.55);
+  font-weight: 500;
+}
+.divider {
+  height: 1px;
+  background: rgba(255,255,255,.12);
+  margin-bottom: 18px;
+}
+.user-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.user-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+}
+.user-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255,255,255,.9);
+}
+.user-date {
+  font-size: 11px;
+  color: rgba(255,255,255,.35);
+  margin-top: 2px;
+}
+.brand-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.brand-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(255,255,255,.6);
+  letter-spacing: .5px;
+}
+.brand-sub {
+  font-size: 10px;
+  color: rgba(255,255,255,.25);
+  letter-spacing: .5px;
+}
+
+/* ════════════════════════════
+   卡片一：完美一组 (金色系)
+════════════════════════════ */
+.card-perfect .card-bg { background: #0c0f1e; }
+.card-perfect .badge-pill {
+  background: linear-gradient(135deg, rgba(255,215,0,.25), rgba(255,180,0,.15));
+  border: 1px solid rgba(255,215,0,.4);
+  color: #FFD700;
+  box-shadow: 0 0 24px rgba(255,215,0,.2);
+}
+.card-perfect .card-footer {
+  background: linear-gradient(0deg, rgba(10,8,20,.98) 60%, transparent);
+}
+.card-perfect .score-main { color: #fff; }
+.card-perfect .score-unit { color: rgba(255,215,0,.7); }
+
+/* ════════════════════════════
+   卡片二：个人最佳 (橙蓝系)
+════════════════════════════ */
+.card-pb .card-bg { background: #060d1f; }
+.card-pb .badge-pill {
+  background: linear-gradient(135deg, rgba(255,107,53,.3), rgba(255,143,94,.15));
+  border: 1px solid rgba(255,107,53,.45);
+  color: #FF8F5E;
+  box-shadow: 0 0 24px rgba(255,107,53,.2);
+}
+.card-pb .card-footer {
+  background: linear-gradient(0deg, rgba(6,13,31,.98) 60%, transparent);
+}
+.card-pb .score-main { color: #fff; }
+.card-pb .score-delta {
+  background: rgba(52,211,153,.15);
+  color: #34D399;
+  border: 1px solid rgba(52,211,153,.25);
+}
+
+/* ── 注释说明 ── */
+.note-card {
+  width: 790px;
+  max-width: 100%;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+  padding: 24px 28px;
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.note-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 180px;
+}
+.note-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,.35);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.note-desc {
+  font-size: 13px;
+  color: rgba(255,255,255,.6);
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<h1>射箭圈 · 分享卡片预览</h1>
+
+<div class="cards-row">
+
+  <!-- ── 卡片一：完美一组 ── -->
+  <div class="card-wrap">
+    <div class="share-card card-perfect">
+
+      <!-- 背景靶面 -->
+      <div class="card-bg">
+        <svg viewBox="0 0 375 560" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="375" height="560" fill="#0c0f1e"/>
+          <!-- 靶面同心圆 -->
+          <circle cx="187" cy="210" r="220" stroke="rgba(255,255,255,0.025)" stroke-width="1"/>
+          <circle cx="187" cy="210" r="180" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+          <circle cx="187" cy="210" r="140" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+          <circle cx="187" cy="210" r="100" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+          <circle cx="187" cy="210" r="70"  stroke="rgba(255,215,0,0.08)"   stroke-width="1.5"/>
+          <circle cx="187" cy="210" r="44"  stroke="rgba(255,215,0,0.12)"   stroke-width="1.5"/>
+          <circle cx="187" cy="210" r="22"  stroke="rgba(255,215,0,0.18)"   stroke-width="1.5"/>
+          <circle cx="187" cy="210" r="8"   fill="rgba(255,215,0,0.15)"/>
+          <!-- 十字线 -->
+          <line x1="187" y1="30"  x2="187" y2="390" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+          <line x1="7"   y1="210" x2="367" y2="210" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+          <!-- 底部渐变遮罩 -->
+          <defs>
+            <linearGradient id="fg1" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="30%" stop-color="#0c0f1e" stop-opacity="0"/>
+              <stop offset="72%" stop-color="#0c0f1e" stop-opacity="0.92"/>
+              <stop offset="100%" stop-color="#0c0f1e" stop-opacity="1"/>
+            </linearGradient>
+          </defs>
+          <rect width="375" height="560" fill="url(#fg1)"/>
+        </svg>
+      </div>
+
+      <!-- 照片占位提示 -->
+      <div class="photo-hint">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <span>用户靶面照片</span>
+      </div>
+
+      <!-- App 水印 -->
+      <div class="card-watermark">
+        <div class="wm-inner">
+          <span class="wm-logo">🏹</span>
+          <span class="wm-name">射箭圈</span>
+        </div>
+      </div>
+
+      <!-- 成就徽章 -->
+      <div class="achievement-badge">
+        <div class="badge-pill">
+          <span class="badge-icon">✦</span>
+          完美一组
+        </div>
+      </div>
+
+      <!-- 底部信息 -->
+      <div class="card-footer">
+        <div class="score-line">
+          <span class="score-main">6</span>
+          <span class="score-unit">× X</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-item">30米</span>
+          <span class="meta-dot"></span>
+          <span class="meta-item">反曲弓</span>
+          <span class="meta-dot"></span>
+          <span class="meta-item">122cm 靶</span>
+          <span class="meta-dot"></span>
+          <span class="meta-item">第 4 组</span>
+        </div>
+        <div class="divider"></div>
+        <div class="user-row">
+          <div class="user-left">
+            <div class="user-avatar" style="background:linear-gradient(135deg,#FF6B35,#FF8F5E)">箭</div>
+            <div>
+              <div class="user-name">箭神小王</div>
+              <div class="user-date">2026年5月19日</div>
+            </div>
+          </div>
+          <div class="brand-right">
+            <span class="brand-name">射箭圈</span>
+            <span class="brand-sub">ARCHERY CIRCLE</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <span class="card-label">完美一组 · 6×X / 6×10 触发</span>
+  </div>
+
+
+  <!-- ── 卡片二：个人最佳 ── -->
+  <div class="card-wrap">
+    <div class="share-card card-pb">
+
+      <!-- 背景靶面 -->
+      <div class="card-bg">
+        <svg viewBox="0 0 375 560" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="375" height="560" fill="#060d1f"/>
+          <circle cx="187" cy="210" r="220" stroke="rgba(255,255,255,0.02)"  stroke-width="1"/>
+          <circle cx="187" cy="210" r="180" stroke="rgba(255,255,255,0.025)" stroke-width="1"/>
+          <circle cx="187" cy="210" r="140" stroke="rgba(255,255,255,0.03)"  stroke-width="1"/>
+          <circle cx="187" cy="210" r="100" stroke="rgba(255,255,255,0.04)"  stroke-width="1"/>
+          <circle cx="187" cy="210" r="70"  stroke="rgba(255,107,53,0.07)"   stroke-width="1.5"/>
+          <circle cx="187" cy="210" r="44"  stroke="rgba(255,107,53,0.1)"    stroke-width="1.5"/>
+          <circle cx="187" cy="210" r="22"  stroke="rgba(255,107,53,0.15)"   stroke-width="1.5"/>
+          <circle cx="187" cy="210" r="8"   fill="rgba(255,107,53,0.12)"/>
+          <line x1="187" y1="30"  x2="187" y2="390" stroke="rgba(255,255,255,0.025)" stroke-width="1"/>
+          <line x1="7"   y1="210" x2="367" y2="210" stroke="rgba(255,255,255,0.025)" stroke-width="1"/>
+          <defs>
+            <linearGradient id="fg2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="30%" stop-color="#060d1f" stop-opacity="0"/>
+              <stop offset="72%" stop-color="#060d1f" stop-opacity="0.92"/>
+              <stop offset="100%" stop-color="#060d1f" stop-opacity="1"/>
+            </linearGradient>
+          </defs>
+          <rect width="375" height="560" fill="url(#fg2)"/>
+        </svg>
+      </div>
+
+      <!-- 照片占位提示 -->
+      <div class="photo-hint">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <span>用户靶面照片</span>
+      </div>
+
+      <!-- App 水印 -->
+      <div class="card-watermark">
+        <div class="wm-inner">
+          <span class="wm-logo">🏹</span>
+          <span class="wm-name">射箭圈</span>
+        </div>
+      </div>
+
+      <!-- 成就徽章 -->
+      <div class="achievement-badge">
+        <div class="badge-pill">
+          <span class="badge-icon">🏆</span>
+          个人最佳
+        </div>
+      </div>
+
+      <!-- 底部信息 -->
+      <div class="card-footer">
+        <div class="score-line">
+          <span class="score-main">112</span>
+          <span class="score-unit">环</span>
+          <span class="score-delta">↑ +8环</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-item">30米</span>
+          <span class="meta-dot"></span>
+          <span class="meta-item">反曲弓</span>
+          <span class="meta-dot"></span>
+          <span class="meta-item">72支</span>
+          <span class="meta-dot"></span>
+          <span class="meta-item">连续训练第 12 天</span>
+        </div>
+        <div class="divider"></div>
+        <div class="user-row">
+          <div class="user-left">
+            <div class="user-avatar" style="background:linear-gradient(135deg,#FF6B35,#FF8F5E)">箭</div>
+            <div>
+              <div class="user-name">箭神小王</div>
+              <div class="user-date">2026年5月19日</div>
+            </div>
+          </div>
+          <div class="brand-right">
+            <span class="brand-name">射箭圈</span>
+            <span class="brand-sub">ARCHERY CIRCLE</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <span class="card-label">个人最佳 · 训练完成时触发</span>
+  </div>
+
+</div>
+
+<!-- 说明 -->
+<div class="note-card">
+  <div class="note-item">
+    <span class="note-title">照片区域</span>
+    <span class="note-desc">用户在成就触发后拍摄靶面，照片作为卡片背景全屏展示，靶面同心圆会被照片替代</span>
+  </div>
+  <div class="note-item">
+    <span class="note-title">触发时机</span>
+    <span class="note-desc">完美一组：单组6×X 或 6×10 实时触发<br>个人最佳：总分超过历史记录，训练完成时触发</span>
+  </div>
+  <div class="note-item">
+    <span class="note-title">分享路径</span>
+    <span class="note-desc">生成图片 → 保存到相册 → 用户自行发朋友圈，品牌随图片自然曝光</span>
+  </div>
+  <div class="note-item">
+    <span class="note-title">后续扩展</span>
+    <span class="note-desc">可增加「连续打卡 30 天」「赛事获奖」等场景，复用同一套卡片模板</span>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,35 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/training/training",
+    "pages/history/history",
+    "pages/detail/detail",
+    "pages/data/data",
+    "pages/events/events",
+    "pages/mine/mine",
+    "pages/explore/explore",
+    "pages/notification/notification",
+    "pages/goal/goal",
+    "pages/profile/profile",
+    "pages/myevents/myevents",
+    "pages/publisher/publisher",
+    "pages/createevent/createevent",
+    "pages/regmanage/regmanage"
+  ],
+  "window": {
+    "navigationStyle": "custom",
+    "backgroundColor": "#F5F5F5"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#999999",
+    "selectedColor": "#FF6B35",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/index/index", "text": "首页" },
+      { "pagePath": "pages/data/data",   "text": "数据" },
+      { "pagePath": "pages/mine/mine",   "text": "我的" }
+    ]
+  }
+}

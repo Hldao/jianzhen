@@ -1,0 +1,141 @@
+<!-- 导航栏 -->
+<view class="navbar" style="padding-top:{{statusBarHeight}}px;">
+  <view class="navbar-inner" style="height:{{navBarHeight}}px;">
+    <view class="nb-back" bindtap="goBack">
+      <view class="nb-back-arrow"></view>
+    </view>
+    <text class="nb-title">历史记录</text>
+    <view class="nb-right"></view>
+  </view>
+</view>
+
+<scroll-view
+  scroll-y enhanced show-scrollbar="{{false}}"
+  class="scroll-body"
+  style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);"
+>
+
+  <!-- 加载中骨架 -->
+  <view wx:if="{{loading}}" class="loading-wrap">
+    <view class="loading-spinner"></view>
+    <text class="loading-txt">加载中…</text>
+  </view>
+
+  <!-- 累计概览卡 -->
+  <view wx:if="{{!loading && records.length > 0}}" class="summary-card">
+    <view class="sc-stat">
+      <text class="sc-num">{{totalSessions}}</text>
+      <text class="sc-lbl">训练次数</text>
+    </view>
+    <view class="sc-vline"></view>
+    <view class="sc-stat">
+      <text class="sc-num">{{totalArrows}}</text>
+      <text class="sc-lbl">总箭数</text>
+    </view>
+    <view class="sc-vline"></view>
+    <view class="sc-stat">
+      <text class="sc-num">{{overallAvg}}</text>
+      <text class="sc-lbl">均环/支</text>
+    </view>
+    <view class="sc-vline"></view>
+    <view class="sc-stat">
+      <text class="sc-num">{{bestEnd}}</text>
+      <text class="sc-lbl">单轮最高</text>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{!loading && records.length === 0}}" class="empty-state">
+    <text class="empty-icon">🏹</text>
+    <text class="empty-title">还没有训练记录</text>
+    <text class="empty-sub">完成第一次训练后将自动保存</text>
+    <button class="btn-go-train" bindtap="goTraining">开始训练</button>
+  </view>
+
+  <!-- 趋势折线图 -->
+  <view wx:if="{{!loading && records.length > 1}}" class="chart-card">
+    <view class="chart-hd">
+      <text class="chart-title">📈 训练趋势</text>
+      <view class="chart-metric-tabs">
+        <view class="cmt {{chartMetric==='avg'?'cmt-on':''}}" bindtap="setChartMetric" data-metric="avg">均环/支</view>
+        <view class="cmt {{chartMetric==='xten'?'cmt-on':''}}" bindtap="setChartMetric" data-metric="xten">X/10%</view>
+      </view>
+    </view>
+    <view class="chart-range-tabs">
+      <view class="crt {{chartRange===30?'crt-on':''}}" bindtap="setChartRange" data-range="30">近30天</view>
+      <view class="crt {{chartRange===90?'crt-on':''}}" bindtap="setChartRange" data-range="90">近90天</view>
+      <view class="crt {{chartRange===0?'crt-on':''}}" bindtap="setChartRange" data-range="0">全部</view>
+    </view>
+    <view wx:if="{{chartEmpty}}" class="chart-empty">数据不足，请切换时间范围</view>
+    <canvas wx:else type="2d" id="trend-canvas" class="trend-canvas"></canvas>
+    <view wx:if="{{chartTrend}}" class="chart-trend">{{chartTrend}}</view>
+    <view class="chart-legend">
+      <view class="cl-item"><view class="cl-dot" style="background:#2563EB"></view><text class="cl-txt">70m</text></view>
+      <view class="cl-item"><view class="cl-dot" style="background:#10B981"></view><text class="cl-txt">30m</text></view>
+      <view class="cl-item"><view class="cl-dot" style="background:#FF6B35"></view><text class="cl-txt">18m</text></view>
+      <view class="cl-item cl-item-ma"><view class="cl-ma-line"></view><text class="cl-txt">7日均线</text></view>
+    </view>
+  </view>
+
+  <!-- 记录列表：整卡可点 -->
+  <view
+    wx:for="{{records}}" wx:key="_id"
+    class="record-card"
+    hover-class="record-card-pressed"
+    hover-stay-time="150"
+    bindtap="openDetail" data-rid="{{item._id}}"
+  >
+
+    <!-- 日期行 -->
+    <view class="rc-header">
+      <text class="rc-date">{{item.dateStr}}</text>
+      <text class="rc-time">{{item.timeStr}}</text>
+    </view>
+
+    <view class="rc-divider"></view>
+
+    <!-- 器材 & 模式标签 -->
+    <view class="rc-tags">
+      <text class="rc-tag">🏹 {{item.bowType}}</text>
+      <text class="rc-tag">{{item.distance}}</text>
+      <text class="rc-tag">{{item.targetSize}}靶</text>
+      <text class="rc-tag rc-tag-mode">{{item.mode}}</text>
+    </view>
+
+    <view class="rc-divider"></view>
+
+    <!-- 核心数据 -->
+    <view class="rc-stats">
+      <view class="rc-stat">
+        <text class="rc-stat-num">{{item.totalScore}}</text>
+        <text class="rc-stat-lbl">总环值</text>
+      </view>
+      <view class="rc-stat-vline"></view>
+      <view class="rc-stat">
+        <text class="rc-stat-num">{{item.avgPerArrow}}</text>
+        <text class="rc-stat-lbl">均环/支</text>
+      </view>
+      <view class="rc-stat-vline"></view>
+      <view class="rc-stat">
+        <text class="rc-stat-num">{{item.bestEndTotal}}</text>
+        <text class="rc-stat-lbl">最佳·{{item.arrowsPerEnd}}支</text>
+      </view>
+    </view>
+
+    <!-- 训练备注（有才显示） -->
+    <view wx:if="{{item.note}}" class="rc-note">
+      <text class="rc-note-icon">📝</text>
+      <text class="rc-note-txt">{{item.note}}</text>
+    </view>
+
+    <!-- 底部提示行 -->
+    <view class="rc-divider"></view>
+    <view class="rc-footer">
+      <text class="rc-arrows-hint">{{item.totalEnds}}组 · {{item.totalArrows}}支箭</text>
+      <text class="rc-chevron">›</text>
+    </view>
+
+  </view>
+
+  <view class="bottom-safe"></view>
+</scroll-view>

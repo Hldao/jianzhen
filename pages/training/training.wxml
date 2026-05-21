@@ -1,0 +1,579 @@
+<!-- 导航栏 -->
+<view class="navbar" style="padding-top:{{statusBarHeight}}px;">
+  <view class="navbar-inner" style="height:{{navBarHeight}}px;">
+    <view class="nb-back" bindtap="goBack">
+      <view class="lc lc-md lc-text lc-chevron-left"></view>
+    </view>
+    <text class="nb-title">
+      <block wx:if="{{step===0}}">开始新训练</block>
+      <block wx:if="{{step===1}}">热身训练</block>
+      <block wx:if="{{step===2}}">空拉练习（SPT）</block>
+      <block wx:if="{{step===3}}">第{{currentEnd+1}}{{endUnit}} / 共{{totalEnds}}{{endUnit}}</block>
+      <block wx:if="{{step===4}}">中场休息</block>
+      <block wx:if="{{step===5}}">训练完成</block>
+      <block wx:if="{{step===6}}">撒放练习</block>
+    </text>
+    <view class="capsule-gap"></view>
+  </view>
+</view>
+
+<!-- ═══════════ STEP 0：设置 ═══════════ -->
+<scroll-view
+  wx:if="{{step===0}}"
+  scroll-y enhanced show-scrollbar="{{false}}"
+  class="scroll-body"
+  style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);"
+>
+  <!-- 训练参数卡 -->
+  <view class="section-card">
+    <view class="section-header">
+      <view class="lc lc-sm lc-gray lc-settings"></view>
+      <text class="section-title">训练参数</text>
+    </view>
+
+    <view class="param-row">
+      <text class="param-label">弓种</text>
+      <view class="chip-row">
+        <view
+          wx:for="{{bowTypes}}" wx:key="value"
+          class="chip {{bowType===item.value?'active':''}}"
+          bindtap="setBowType" data-value="{{item.value}}"
+        >{{item.label}}</view>
+      </view>
+    </view>
+
+    <view class="param-row">
+      <text class="param-label">距离</text>
+      <view class="chip-row">
+        <view
+          wx:for="{{distances}}" wx:key="*this"
+          class="chip {{distance===item?'active':''}}"
+          bindtap="setDistance" data-val="{{item}}"
+        >{{item}}</view>
+      </view>
+    </view>
+
+    <view class="param-row">
+      <text class="param-label">靶面尺寸</text>
+      <view class="chip-row">
+        <view
+          wx:for="{{targetSizes}}" wx:key="*this"
+          class="chip {{targetSize===item?'active':''}}"
+          bindtap="setTargetSize" data-val="{{item}}"
+        >{{item}}</view>
+      </view>
+      <text wx:if="{{targetSizeHint}}" class="param-hint">{{targetSizeHint}}</text>
+    </view>
+
+    <view class="param-row" style="border-bottom:none">
+      <text class="param-label">训练模式</text>
+      <view class="chip-row">
+        <view class="chip {{mode==='ranking'?'active':''}}"   bindtap="setMode" data-mode="ranking">排位赛</view>
+        <view class="chip {{mode==='elimination'?'active':''}}" bindtap="setMode" data-mode="elimination">模拟淘汰赛</view>
+        <view class="chip {{mode==='custom'?'active':''}}"    bindtap="setMode" data-mode="custom">自定义</view>
+      </view>
+    </view>
+
+    <!-- 淘汰赛对手难度 -->
+    <view wx:if="{{mode==='elimination'}}" class="custom-expand">
+      <text class="param-label">对手难度</text>
+      <view class="chip-row">
+        <view class="chip {{elimDifficulty==='easy'?'active':''}}"   bindtap="changeElimDifficulty" data-level="easy">让分</view>
+        <view class="chip {{elimDifficulty==='normal'?'active':''}}" bindtap="changeElimDifficulty" data-level="normal">正常</view>
+        <view class="chip {{elimDifficulty==='hard'?'active':''}}"   bindtap="changeElimDifficulty" data-level="hard">挑战</view>
+      </view>
+      <text class="param-hint">将根据历史成绩校准虚拟对手水平，无记录则使用默认</text>
+    </view>
+
+    <!-- 自定义展开区 -->
+    <view wx:if="{{showCustom}}" class="custom-expand">
+      <view class="custom-row">
+        <text class="custom-label">组数</text>
+        <view class="custom-stepper">
+          <view class="stepper-btn" bindtap="changeCustomEnds" data-delta="-1">－</view>
+          <text class="stepper-val">{{customEnds}}</text>
+          <view class="stepper-btn" bindtap="changeCustomEnds" data-delta="1">＋</view>
+        </view>
+      </view>
+      <view class="custom-row">
+        <text class="custom-label">每组箭数</text>
+        <view class="custom-stepper">
+          <view class="stepper-btn" bindtap="changeCustomArrows" data-delta="-1">－</view>
+          <text class="stepper-val">{{customArrowsPerEnd}}</text>
+          <view class="stepper-btn" bindtap="changeCustomArrows" data-delta="1">＋</view>
+        </view>
+      </view>
+      <view class="custom-row">
+        <text class="custom-label">时限/组</text>
+        <view class="custom-stepper">
+          <view class="stepper-btn" bindtap="changeCustomTime" data-delta="-30">－</view>
+          <text class="stepper-val">{{customTimeLimitLabel}}</text>
+          <view class="stepper-btn" bindtap="changeCustomTime" data-delta="30">＋</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 热身准备卡 -->
+  <view class="section-card">
+    <view class="section-header section-header-warm">
+      <view class="lc lc-sm lc-primary lc-crosshair"></view>
+      <text class="section-title section-title-warm">热身准备</text>
+      <text class="section-badge">推荐完成</text>
+    </view>
+
+    <view class="prep-item">
+      <view class="prep-icon-wrap"><view class="lc lc-md lc-primary lc-clock"></view></view>
+      <view class="prep-info">
+        <text class="prep-title">5分钟热身跟练</text>
+        <text class="prep-desc">激活肩背肌群，预防伤病，提升成绩</text>
+      </view>
+      <view wx:if="{{warmupDone}}" class="prep-done-tag">✓ 已完成</view>
+      <view wx:else class="prep-start-btn" bindtap="goWarmup">开始热身</view>
+    </view>
+
+    <view class="prep-item">
+      <view class="prep-icon-wrap"><view class="lc lc-md lc-primary lc-crosshair"></view></view>
+      <view class="prep-info">
+        <text class="prep-title">空拉练习（SPT）</text>
+        <text class="prep-desc">无箭重复动作循环，巩固开弓与后背发力的肌肉记忆</text>
+      </view>
+      <view wx:if="{{sptDone}}" class="prep-done-tag">✓ 已完成</view>
+      <view wx:else class="prep-start-btn" bindtap="goSpt">开始练习</view>
+    </view>
+
+    <view class="prep-item" style="border-bottom:none">
+      <view class="prep-icon-wrap"><view class="lc lc-md lc-primary lc-zap"></view></view>
+      <view class="prep-info">
+        <text class="prep-title">撒放专项练习</text>
+        <text class="prep-desc">有箭对靶，专注撒放瞬间手指的被动放开与延伸</text>
+      </view>
+      <view wx:if="{{releaseDone}}" class="prep-done-tag">✓ 已完成</view>
+      <view wx:else class="prep-start-btn" bindtap="goRelease">开始练习</view>
+    </view>
+
+    <text class="prep-note">以上三项准备有效预防伤病、提升动作稳定性，强烈建议全部完成后再开始训练</text>
+  </view>
+
+  <!-- 开始训练 -->
+  <button class="btn-start-training" bindtap="startTraining">
+    <view class="lc lc-md lc-white lc-crosshair"></view>
+    <text>开始训练</text>
+  </button>
+  <view style="height:40rpx"></view>
+</scroll-view>
+
+<!-- ═══════════ STEP 1：热身 ═══════════ -->
+<scroll-view
+  wx:if="{{step===1}}"
+  scroll-y enhanced show-scrollbar="{{false}}"
+  class="scroll-body"
+  style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);"
+>
+  <view class="step-h1">完成以下热身动作</view>
+  <view class="step-sub">充分热身减少运动损伤，提升训练成绩</view>
+
+  <view class="warmup-list">
+    <view
+      wx:for="{{warmupItems}}" wx:key="id"
+      class="warmup-item {{item.done?'done':''}}"
+      bindtap="toggleWarmup" data-index="{{index}}"
+    >
+      <view class="wu-check">
+        <text wx:if="{{item.done}}" class="check-mark">✓</text>
+      </view>
+      <text class="wu-text">{{item.text}}</text>
+    </view>
+  </view>
+
+  <button class="btn-primary" bindtap="finishWarmup">完成热身，返回准备页 ✓</button>
+  <button class="btn-skip"    bindtap="skipWarmup">跳过热身</button>
+</scroll-view>
+
+<!-- ═══════════ STEP 2：SPT ═══════════ -->
+<scroll-view
+  wx:if="{{step===2}}"
+  scroll-y enhanced show-scrollbar="{{false}}"
+  class="scroll-body"
+  style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);"
+>
+  <view class="step-h1">空拉练习（SPT）</view>
+  <view class="step-sub">无箭或贴墙，重复完整动作循环，不需要真实撒放</view>
+
+  <view class="spt-ring">
+    <text class="spt-count">{{sptCount}}</text>
+    <text class="spt-slash">/</text>
+    <text class="spt-target">{{sptTarget}}</text>
+    <text class="spt-unit">次</text>
+  </view>
+
+  <view class="spt-tips">
+    <text>· 动作顺序：举弓 → 开弓 → 靠位 → 后背发力 → 缓慢放弦</text>
+    <text>· 满弓时保持 2–3 秒，感受后背菱形肌的持续张力</text>
+    <text>· 不用箭，消除对落点的心理干扰，专注动作本身</text>
+    <text>· 每次间隔 10 秒，追求每次重复的动作完全一致</text>
+  </view>
+
+  <button class="btn-primary" bindtap="recordSpt">
+    记录一支（{{sptCount}}/{{sptTarget}}）
+  </button>
+  <button
+    wx:if="{{sptCount >= sptTarget}}"
+    class="btn-primary btn-green" bindtap="finishSpt"
+  >空拉完成，返回准备页 ✓</button>
+  <button class="btn-skip" bindtap="skipSpt">跳过空拉</button>
+</scroll-view>
+
+<!-- ═══════════ STEP 3：记分 ═══════════ -->
+<view
+  wx:if="{{step===3}}"
+  class="scoring-wrap"
+  style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);"
+>
+  <!-- 顶栏：元信息 + 本组/累计 -->
+  <view class="score-header">
+    <text class="sh-meta">
+      {{mode==='ranking'?(currentEnd<6?'上半场':'下半场'):mode==='elimination'?'模拟淘汰赛':'训练'}} · {{distance}} · {{targetSize}}
+    </text>
+    <view class="sh-totals">
+      <view class="sh-tot">
+        <text class="sh-num">{{endTotal}}</text>
+        <text class="sh-lbl">本{{endUnit}}</text>
+      </view>
+      <view class="sh-divider"></view>
+      <view class="sh-tot">
+        <text class="sh-num">{{totalScore}}</text>
+        <text class="sh-lbl">累计</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 淘汰赛积分栏 -->
+  <view wx:if="{{mode==='elimination'}}" class="elim-pts-bar">
+    <text class="epb-num {{elimMyPts >= elimOppPts ? 'epb-lead' : ''}}">{{elimMyPts}}</text>
+    <text class="epb-sep"> – </text>
+    <text class="epb-num {{elimOppPts > elimMyPts ? 'epb-lead' : ''}}">{{elimOppPts}}</text>
+    <text class="epb-lbl">积分</text>
+  </view>
+
+  <!-- 计时器 -->
+  <view
+    wx:if="{{timerTotal > 0}}"
+    class="timer-row timer-{{timerState}} {{!timerRunning && !isEndDone && !timerElimArrow ? 'timer-ready' : ''}}"
+    bindtap="tapTimer"
+  >
+    <text class="timer-display-txt">{{timerDisplay}}</text>
+    <view class="timer-track">
+      <view class="timer-fill" style="width:{{timerPct}}%"></view>
+    </view>
+    <view wx:if="{{timerElimArrow}}" class="timer-label-tag">本箭</view>
+    <view wx:elif="{{!timerRunning && !isEndDone}}" class="timer-start-hint">▶ 就位后点击</view>
+    <view wx:else class="timer-label-tag"></view>
+  </view>
+
+  <!-- 箭槽区 -->
+  <view class="slots-section">
+    <view class="slots-row">
+      <view
+        wx:for="{{endSlots}}" wx:key="index"
+        class="a-slot {{item.isCurrent?'cur':''}}"
+        style="background:{{item.bg}};color:{{item.textColor}};"
+      >
+        <text class="a-score">{{item.score}}</text>
+      </view>
+    </view>
+    <text class="slots-progress">{{ends[currentEnd].length}}/{{arrowsPerEnd}} 支</text>
+  </view>
+
+  <!-- 记分键盘（按靶纸环色分组） -->
+  <view class="pad-wrap">
+
+    <!-- 黄心：X / 10 / 9 -->
+    <view class="pad-row">
+      <view class="pad-btn pad-gold {{isEndDone?'pad-dis':''}}" bindtap="recordArrow" data-value="X">
+        <text class="pad-num">X</text>
+        <text class="pad-sub">内金</text>
+      </view>
+      <view class="pad-btn pad-gold {{isEndDone?'pad-dis':''}}" bindtap="recordArrow" data-value="10">
+        <text class="pad-num">10</text>
+      </view>
+      <view class="pad-btn pad-gold {{isEndDone?'pad-dis':''}}" bindtap="recordArrow" data-value="9">
+        <text class="pad-num">9</text>
+      </view>
+    </view>
+
+    <!-- 红环：8 / 7 -->
+    <view class="pad-row">
+      <view class="pad-btn pad-red {{isEndDone?'pad-dis':''}}" bindtap="recordArrow" data-value="8">
+        <text class="pad-num">8</text>
+      </view>
+      <view class="pad-btn pad-red {{isEndDone?'pad-dis':''}}" bindtap="recordArrow" data-value="7">
+        <text class="pad-num">7</text>
+      </view>
+    </view>
+
+    <!-- 蓝环：6 / 5 -->
+    <view class="pad-row">
+      <view class="pad-btn pad-blue {{isEndDone?'pad-dis':''}}" bindtap="recordArrow" data-value="6">
+        <text class="pad-num">6</text>
+      </view>
+      <view class="pad-btn pad-blue {{isEndDone?'pad-dis':''}}" bindtap="recordArrow" data-value="5">
+        <text class="pad-num">5</text>
+      </view>
+    </view>
+
+    <!-- 黑环：4 / 3 -->
+    <view class="pad-row">
+      <view class="pad-btn pad-black {{isEndDone?'pad-dis':''}}" bindtap="recordArrow" data-value="4">
+        <text class="pad-num">4</text>
+      </view>
+      <view class="pad-btn pad-black {{isEndDone?'pad-dis':''}}" bindtap="recordArrow" data-value="3">
+        <text class="pad-num">3</text>
+      </view>
+    </view>
+
+    <!-- 白环 + 脱靶：2 / 1 / M -->
+    <view class="pad-row pad-row-outer">
+      <view class="pad-btn pad-white {{isEndDone?'pad-dis':''}}" bindtap="recordArrow" data-value="2">
+        <text class="pad-num pad-num-dark">2</text>
+      </view>
+      <view class="pad-btn pad-white {{isEndDone?'pad-dis':''}}" bindtap="recordArrow" data-value="1">
+        <text class="pad-num pad-num-dark">1</text>
+      </view>
+      <view class="pad-btn pad-miss {{isEndDone?'pad-dis':''}}" bindtap="recordArrow" data-value="M">
+        <text class="pad-num pad-miss-lbl">脱靶</text>
+      </view>
+    </view>
+
+    <!-- 操作行 -->
+    <view class="act-row">
+      <view class="btn-undo" bindtap="deleteLastArrow">← 撤销</view>
+      <view wx:if="{{isEndDone}}" class="btn-next-end" bindtap="nextEnd">
+        下一{{endUnit}} →
+      </view>
+    </view>
+
+  </view>
+</view>
+
+<!-- ═══════════ STEP 4：中场 ═══════════ -->
+<scroll-view
+  wx:if="{{step===4}}"
+  scroll-y enhanced show-scrollbar="{{false}}"
+  class="scroll-body"
+  style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);"
+>
+  <view class="hero-block">
+    <view class="hero-icon lc lc-2xl lc-yellow lc-coffee"></view>
+    <text class="hero-title">上半场完成</text>
+    <view class="hero-score-row">
+      <text class="hero-score">{{halfScore}}</text>
+      <text class="hero-max">/ 360 环</text>
+    </view>
+    <text class="hero-hint">休息2–5分钟，补水，调整状态</text>
+  </view>
+  <view class="end-list">
+    <view wx:for="{{endResults}}" wx:key="endNum" class="el-row">
+      <text class="el-lbl">第{{item.endNum}}{{endUnit}}</text>
+      <view class="el-arrows">
+        <text wx:for="{{item.arrows}}" wx:key="index" wx:for-item="a" class="el-arrow">{{a}}</text>
+      </view>
+      <text class="el-tot">{{item.total}}</text>
+    </view>
+  </view>
+  <button class="btn-primary" bindtap="continueSecondHalf">开始下半场 →</button>
+</scroll-view>
+
+<!-- ═══════════ STEP 5：结果 ═══════════ -->
+<scroll-view
+  wx:if="{{step===5}}"
+  scroll-y enhanced show-scrollbar="{{false}}"
+  class="scroll-body"
+  style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);"
+>
+  <view class="hero-block">
+    <view class="hero-icon lci-target" style="width:96rpx;height:96rpx;"></view>
+    <text class="hero-title">{{mode==='elimination'?'淘汰赛结束':'训练完成！'}}</text>
+    <view class="hero-score-row">
+      <text class="hero-score">{{totalScore}}</text>
+      <text class="hero-max">/ {{totalEnds * arrowsPerEnd * 10}} 环</text>
+    </view>
+    <text class="hero-hint">{{distance}} · {{targetSize}} · {{totalEnds * arrowsPerEnd}}支 · {{totalEnds}}{{endUnit}}</text>
+    <view wx:if="{{isPB}}" class="pb-flag">
+      <text>🏆 个人最佳 · 较上次 +{{momentPBDiff}} 环</text>
+    </view>
+  </view>
+
+  <!-- 淘汰赛最终积分 -->
+  <view wx:if="{{mode==='elimination'}}" class="elim-result-summary">
+    <text class="ers-final-label">{{elimMatchWon?'🏆 你赢了！':'比赛结束'}}</text>
+    <view class="ers-pts-row">
+      <text class="ers-pts {{elimMatchWon?'ers-pts-win':''}}">{{elimMyPts}}</text>
+      <text class="ers-pts-sep">–</text>
+      <text class="ers-pts {{(!elimMatchWon && elimMatchWon!==null)?'ers-pts-opp':''}}">{{elimOppPts}}</text>
+    </view>
+    <text class="ers-pts-label">最终积分（我 – 对手）</text>
+  </view>
+
+  <view class="end-list">
+    <view wx:for="{{endResults}}" wx:key="endNum" class="el-row">
+      <text class="el-lbl">第{{item.endNum}}{{endUnit}}</text>
+      <view class="el-arrows">
+        <text wx:for="{{item.arrows}}" wx:key="index" wx:for-item="a" class="el-arrow">{{a}}</text>
+      </view>
+      <text wx:if="{{mode==='elimination' && item.oppScore !== undefined}}" class="el-elim-sum el-elim-{{item.setResult}}">{{item.total}} vs {{item.oppScore}}</text>
+      <text wx:else class="el-tot">{{item.total}}</text>
+    </view>
+  </view>
+  <view class="note-card-tr">
+    <view class="note-hd-tr">
+      <view class="lc lc-sm lc-blue lc-pencil"></view>
+      <text class="note-hd-title-tr">训练感言</text>
+      <text class="note-hd-opt-tr">选填</text>
+    </view>
+    <textarea
+      class="note-input"
+      placeholder="记录今天的训练心得、状态或收获…"
+      placeholder-class="note-placeholder"
+      bindinput="onNoteInput"
+      value="{{note}}"
+      maxlength="200"
+      auto-height
+    ></textarea>
+    <text class="note-count-tr">{{note.length}} / 200</text>
+  </view>
+  <button class="btn-primary" bindtap="finishTraining">完成，返回首页</button>
+  <view style="height:40rpx"></view>
+</scroll-view>
+
+<!-- ═══════════ STEP 6：撒放练习 ═══════════ -->
+<scroll-view
+  wx:if="{{step===6}}"
+  scroll-y enhanced show-scrollbar="{{false}}"
+  class="scroll-body"
+  style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);"
+>
+  <view class="step-h1">撒放专项练习</view>
+  <view class="step-sub">有箭对靶（短距离或空靶），专注撒放瞬间的手指感受</view>
+
+  <view class="release-ring release-ring-{{releaseState}}">
+    <text class="release-ring-time">{{releaseDisplay}}</text>
+    <text class="release-ring-lbl">{{releaseRunning ? '计时中' : releaseSecs===300 ? '5 分钟' : releaseSecs===0 ? '完成！' : '已暂停'}}</text>
+  </view>
+
+  <view class="spt-tips">
+    <text>· 手指"被动张开"——让弓弦推离手指，不要主动拨弦</text>
+    <text>· 撒放后弓臂保持延伸 2 秒，不急于低弓看落点（follow-through）</text>
+    <text>· 撒放时手指自然放松，不要主动拨弦</text>
+    <text>· 感受肩胛骨向脊椎夹紧，配合撒放延伸</text>
+  </view>
+
+  <button wx:if="{{releaseSecs > 0}}" class="btn-primary" bindtap="toggleReleaseTimer">
+    {{releaseRunning ? '⏸  暂停' : releaseSecs===300 ? '▶  开始计时' : '▶  继续'}}
+  </button>
+  <button wx:if="{{releaseSecs < 300}}" class="btn-primary btn-green" bindtap="finishRelease">
+    完成练习，返回准备页 ✓
+  </button>
+  <button class="btn-skip" bindtap="skipRelease">跳过练习</button>
+</scroll-view>
+
+<!-- ═══════════ 精彩时刻弹层（全屏覆盖） ═══════════ -->
+<view wx:if="{{showMoment}}" class="moment-overlay">
+  <view class="moment-inner">
+
+    <!-- 徽章 -->
+    <view class="moment-badge-row">
+      <view class="moment-badge {{momentType==='perfect'?'moment-badge-perfect':momentType==='golden'?'moment-badge-golden':'moment-badge-pb'}}">
+        <text>{{momentType==='perfect'?'✦  完美一组':momentType==='golden'?'⭐  收黄':'🏆  个人最佳'}}</text>
+      </view>
+    </view>
+
+    <!-- 首次成就解锁提示 -->
+    <view wx:if="{{momentIsFirstPerfect && momentType === 'perfect'}}" class="moment-first-unlock">
+      <text>🏅 成就解锁 · 完美一组首次达成！</text>
+    </view>
+    <view wx:elif="{{momentIsFirstGolden && momentType === 'golden'}}" class="moment-first-unlock">
+      <text>🏅 成就解锁 · 收黄首次达成！</text>
+    </view>
+
+    <!-- 完美一组 / 收黄：展示各箭 -->
+    <view wx:if="{{momentType==='perfect' || momentType==='golden'}}" class="moment-arrows">
+      <view
+        wx:for="{{momentArrows}}" wx:key="index"
+        class="moment-arr {{item==='X'?'moment-arr-x':item==='10'?'moment-arr-ten':'moment-arr-nine'}}"
+      >
+        <text>{{item}}</text>
+      </view>
+    </view>
+
+    <!-- 迷你分享卡 -->
+    <view class="mini-card {{momentType==='perfect'?'mini-card-gold':momentType==='golden'?'mini-card-warm':'mini-card-orange'}}">
+      <view class="mini-card-rings"></view>
+      <view class="mini-card-overlay"></view>
+      <text class="mini-card-wm">箭证</text>
+      <view class="mini-card-content">
+        <view class="mini-card-score-row">
+          <text class="mini-card-score">{{momentCardScore}}</text>
+          <text class="mini-card-unit {{momentType==='perfect'?'mini-card-unit-gold':momentType==='golden'?'mini-card-unit-warm':'mini-card-unit-orange'}}">{{momentCardUnit}}</text>
+        </view>
+        <text class="mini-card-meta">{{momentCardMeta}}</text>
+      </view>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="moment-btns">
+      <view
+        class="moment-btn-share {{momentType==='perfect'?'moment-btn-share-perfect':momentType==='golden'?'moment-btn-share-golden':'moment-btn-share-pb'}}"
+        bindtap="saveMomentCard"
+      >
+        <text>{{momentType==='perfect'?'✦ 生成分享图':momentType==='golden'?'⭐ 生成分享图':'生成分享图'}}</text>
+      </view>
+      <view class="moment-btn-skip" bindtap="dismissMoment">
+        <text>{{momentType==='pb'?'稍后再说':'继续训练 →'}}</text>
+      </view>
+    </view>
+
+  </view>
+</view>
+
+<!-- ═══════════ 淘汰赛局结果弹层 ═══════════ -->
+<view wx:if="{{showElimResult}}" class="elim-overlay">
+  <view class="elim-card">
+    <text class="elim-set-title">第 {{elimLastSet.endNum}} 局结束</text>
+
+    <view class="elim-score-compare">
+      <view class="elim-side">
+        <text class="esc-label">我</text>
+        <text class="esc-score">{{elimLastSet.myScore}}</text>
+        <text class="esc-unit">环</text>
+      </view>
+      <view class="esc-middle">
+        <view class="esc-result-badge esc-{{elimLastSet.setResult}}">
+          <text>{{elimLastSet.setResult==='win'?'赢':elimLastSet.setResult==='draw'?'平':'负'}}</text>
+        </view>
+        <text class="esc-vs">vs</text>
+      </view>
+      <view class="elim-side">
+        <text class="esc-label">对手</text>
+        <text class="esc-score">{{elimLastSet.oppScore}}</text>
+        <text class="esc-unit">环</text>
+      </view>
+    </view>
+
+    <view class="elim-running-pts">
+      <text class="erp-num {{elimLastSet.myPtsAfter >= elimLastSet.oppPtsAfter ? 'erp-lead' : ''}}">{{elimLastSet.myPtsAfter}}</text>
+      <text class="erp-dash">–</text>
+      <text class="erp-num {{elimLastSet.oppPtsAfter > elimLastSet.myPtsAfter ? 'erp-lead' : ''}}">{{elimLastSet.oppPtsAfter}}</text>
+      <text class="erp-lbl">积分</text>
+    </view>
+
+    <view wx:if="{{elimMatchOver}}" class="elim-match-over-banner {{elimMatchWon?'emo-win':'emo-lose'}}">
+      <text>{{elimMatchWon?'🏆 你赢得了比赛！':'💪 继续努力，下次加油！'}}</text>
+    </view>
+
+    <view class="elim-dismiss-btn" bindtap="dismissElimResult">
+      <text>{{elimMatchOver?'查看训练记录 →':'下一局 →'}}</text>
+    </view>
+  </view>
+</view>
+

@@ -1,0 +1,183 @@
+<!-- 导航栏 -->
+<view class="navbar" style="padding-top:{{statusBarHeight}}px;">
+  <view class="navbar-inner" style="height:{{navBarHeight}}px;">
+    <view class="nb-back" bindtap="goBack">
+      <view class="lc lc-md lc-gray lc-chevron-left"></view>
+    </view>
+    <text class="nb-title">发布赛事</text>
+    <view style="width:64rpx;"></view>
+  </view>
+</view>
+
+<scroll-view
+  scroll-y enhanced show-scrollbar="{{false}}"
+  class="scroll-body"
+  style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);"
+>
+  <view class="form-body">
+
+    <!-- 基本信息 -->
+    <view class="section-title">基本信息</view>
+
+    <view class="field-group">
+      <view class="field">
+        <text class="field-label">赛事名称 <text class="required">*</text></text>
+        <input class="field-input" placeholder="请输入赛事名称" placeholder-style="color:#94A3B8;"
+          value="{{form.name}}" bindinput="onInput" data-key="name" />
+      </view>
+
+      <view class="field-divider"></view>
+
+      <view class="field">
+        <text class="field-label">封面图 <text class="required">*</text></text>
+        <view class="upload-area" bindtap="chooseCover">
+          <view wx:if="{{form.cover}}" class="upload-preview">
+            <image class="cover-img" src="{{form.cover}}" mode="aspectFill"></image>
+            <view class="cover-change">更换图片</view>
+          </view>
+          <block wx:else>
+            <view class="lc lc-lg lc-gray lc-image"></view>
+            <text class="upload-label">上传封面图</text>
+            <text class="upload-sub">建议尺寸 750×400</text>
+          </block>
+        </view>
+      </view>
+
+      <view class="field-divider"></view>
+
+      <view class="field">
+        <text class="field-label">主办单位 <text class="required">*</text></text>
+        <input class="field-input" placeholder="请输入主办单位名称" placeholder-style="color:#94A3B8;"
+          value="{{form.organizer}}" bindinput="onInput" data-key="organizer" />
+      </view>
+
+      <view class="field-divider"></view>
+
+      <view class="field">
+        <text class="field-label">举办地点 <text class="required">*</text></text>
+        <input class="field-input" placeholder="城市 + 场馆名" placeholder-style="color:#94A3B8;"
+          value="{{form.location}}" bindinput="onInput" data-key="location" />
+      </view>
+
+      <view class="field-divider"></view>
+
+      <view class="field">
+        <text class="field-label">详细地址 <text class="required">*</text></text>
+        <input class="field-input" placeholder="街道、门牌号等" placeholder-style="color:#94A3B8;"
+          value="{{form.address}}" bindinput="onInput" data-key="address" />
+      </view>
+    </view>
+
+    <!-- 时间设置 -->
+    <view class="section-title">时间设置</view>
+    <view class="field-group">
+      <view class="field-row">
+        <view class="field field-half">
+          <text class="field-label">比赛开始日 <text class="required">*</text></text>
+          <view class="field-picker" bindtap="pickDate" data-key="startDate">
+            <text class="{{form.startDate ? 'picker-val' : 'picker-placeholder'}}">{{form.startDate || '选择日期'}}</text>
+            <view class="lc lc-xs lc-gray lc-calendar"></view>
+          </view>
+        </view>
+        <view class="field field-half">
+          <text class="field-label">比赛结束日 <text class="required">*</text></text>
+          <view class="field-picker" bindtap="pickDate" data-key="endDate">
+            <text class="{{form.endDate ? 'picker-val' : 'picker-placeholder'}}">{{form.endDate || '选择日期'}}</text>
+            <view class="lc lc-xs lc-gray lc-calendar"></view>
+          </view>
+        </view>
+      </view>
+      <view class="field-divider"></view>
+      <view class="field-row">
+        <view class="field field-half">
+          <text class="field-label">报名开始 <text class="required">*</text></text>
+          <view class="field-picker" bindtap="pickDate" data-key="regStart">
+            <text class="{{form.regStart ? 'picker-val' : 'picker-placeholder'}}">{{form.regStart || '选择日期'}}</text>
+            <view class="lc lc-xs lc-gray lc-calendar"></view>
+          </view>
+        </view>
+        <view class="field field-half">
+          <text class="field-label">报名截止 <text class="required">*</text></text>
+          <view class="field-picker" bindtap="pickDate" data-key="regEnd">
+            <text class="{{form.regEnd ? 'picker-val' : 'picker-placeholder'}}">{{form.regEnd || '选择日期'}}</text>
+            <view class="lc lc-xs lc-gray lc-calendar"></view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 报名设置 -->
+    <view class="section-title">报名设置</view>
+    <view class="field-group">
+      <view class="field">
+        <text class="field-label">限报人数</text>
+        <input class="field-input" type="number" placeholder="留空表示不限" placeholder-style="color:#94A3B8;"
+          value="{{form.maxParticipants}}" bindinput="onInput" data-key="maxParticipants" />
+      </view>
+      <view class="field-divider"></view>
+      <view class="field">
+        <text class="field-label">报名费 <text class="required">*</text></text>
+        <view class="field-input-row">
+          <input class="field-input field-input-fee" type="digit" placeholder="0" placeholder-style="color:#94A3B8;"
+            value="{{form.fee}}" bindinput="onInput" data-key="fee" />
+          <text class="field-unit">元/人</text>
+        </view>
+      </view>
+      <view class="field-divider"></view>
+      <view class="field">
+        <text class="field-label">缴费说明 <text class="required">*</text></text>
+        <textarea class="field-textarea" placeholder="如：报名后转账至XXX，备注姓名" placeholder-style="color:#94A3B8;"
+          value="{{form.feeDesc}}" bindinput="onInput" data-key="feeDesc" auto-height />
+      </view>
+    </view>
+
+    <!-- 竞赛项目 -->
+    <view class="section-title">竞赛项目</view>
+    <view class="field-group">
+      <view class="cat-chips">
+        <view
+          wx:for="{{categoryOptions}}" wx:key="*this"
+          class="cat-chip {{form.categories.indexOf(item) !== -1 ? 'cat-chip-on' : ''}}"
+          bindtap="toggleCategory" data-cat="{{item}}"
+        >
+          <text>{{item}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 联系方式 -->
+    <view class="section-title">联系方式</view>
+    <view class="field-group">
+      <view class="field">
+        <text class="field-label">联系人 <text class="required">*</text></text>
+        <input class="field-input" placeholder="姓名" placeholder-style="color:#94A3B8;"
+          value="{{form.contactName}}" bindinput="onInput" data-key="contactName" />
+      </view>
+      <view class="field-divider"></view>
+      <view class="field">
+        <text class="field-label">联系电话 <text class="required">*</text></text>
+        <input class="field-input" type="number" placeholder="手机号" placeholder-style="color:#94A3B8;"
+          value="{{form.contactPhone}}" bindinput="onInput" data-key="contactPhone" />
+      </view>
+      <view class="field-divider"></view>
+      <view class="field">
+        <text class="field-label">竞赛规程</text>
+        <view class="upload-area upload-area-sm" bindtap="choosePdf">
+          <view class="lc lc-md lc-gray lc-file-text"></view>
+          <text class="upload-label">{{form.pdfName || '上传竞赛规程'}}</text>
+          <text class="upload-sub">支持 PDF 格式</text>
+        </view>
+      </view>
+    </view>
+
+  </view>
+
+  <view class="bottom-safe"></view>
+</scroll-view>
+
+<!-- 底部提交按钮 -->
+<view class="submit-bar" style="padding-bottom:calc({{safeBottom}}px + 24rpx);">
+  <button class="submit-btn" bindtap="submitForm" loading="{{submitting}}">
+    <text>发布赛事</text>
+  </button>
+</view>

@@ -1,0 +1,17 @@
+# 微信开发者工具私有配置（包含本地调试端口等，不应共享）
+project.private.config.json
+
+# 云函数依赖
+cloudfunctions/*/node_modules/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# 编辑器
+.vscode/
+*.swp
+*.swo
+
+# 日志
+*.log

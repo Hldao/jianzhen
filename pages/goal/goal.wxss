@@ -1,0 +1,108 @@
+page {
+  background: #EEF1F8;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+  --primary: #FF6B35;
+  --text: #1A1A2E;
+  --text-mid: #64748B;
+  --text-light: #94A3B8;
+  --border: #E8ECF2;
+  --white: #fff;
+  --shadow: 0 4rpx 20rpx rgba(0,0,0,.07);
+  --radius: 28rpx;
+}
+
+/* ── 导航栏 ── */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(255,255,255,.95);
+  border-bottom: 1rpx solid var(--border);
+}
+.navbar-inner {
+  display: flex; align-items: center;
+  padding: 0 24rpx; position: relative;
+}
+.nb-back {
+  width: 64rpx; height: 64rpx;
+  display: flex; align-items: center; justify-content: center;
+}
+.nb-back-icon { font-size: 48rpx; color: var(--text); line-height: 1; font-weight: 300; }
+.nb-title { flex: 1; font-size: 32rpx; font-weight: 700; color: var(--text); text-align: center; }
+
+/* ── 滚动体 ── */
+.scroll-body {
+  position: fixed; left: 0; right: 0;
+  bottom: 0; padding: 24rpx 24rpx 0;
+  box-sizing: border-box;
+}
+
+/* ── 分区 ── */
+.goal-section {
+  background: var(--white); border-radius: var(--radius);
+  padding: 32rpx 28rpx; margin-bottom: 16rpx;
+  box-shadow: var(--shadow);
+}
+.goal-section-title {
+  font-size: 24rpx; font-weight: 700; color: var(--text-light);
+  letter-spacing: 1rpx; margin-bottom: 20rpx; display: block;
+}
+
+/* ── Chips ── */
+.chips { display: flex; flex-wrap: wrap; gap: 16rpx; }
+.chip {
+  padding: 12rpx 28rpx; border-radius: 40rpx;
+  font-size: 26rpx; font-weight: 500; color: var(--text-mid);
+  background: var(--border);
+}
+.chip-on {
+  background: rgba(255,107,53,.12); color: var(--primary);
+  font-weight: 700;
+}
+
+/* ── 输入框 ── */
+.goal-input {
+  width: 100%; height: 80rpx; box-sizing: border-box;
+  border: 2rpx solid var(--border); border-radius: 16rpx;
+  padding: 0 24rpx; font-size: 28rpx; color: var(--text);
+  background: #F8FAFC;
+}
+
+/* ── 日期选择器 ── */
+.goal-date-picker {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 80rpx; border: 2rpx solid var(--border); border-radius: 16rpx;
+  padding: 0 24rpx; font-size: 28rpx; color: var(--text);
+  background: #F8FAFC;
+}
+.goal-date-ph { color: var(--text-light); }
+.goal-date-arrow { font-size: 36rpx; color: var(--text-light); font-weight: 300; }
+
+/* ── 预览框 ── */
+.goal-preview-box {
+  background: rgba(255,107,53,.06); border: 2rpx solid rgba(255,107,53,.2);
+  border-radius: var(--radius); padding: 28rpx; margin-bottom: 16rpx;
+}
+.goal-preview-label {
+  font-size: 22rpx; font-weight: 700; color: var(--primary);
+  letter-spacing: 1rpx; margin-bottom: 12rpx; display: block;
+}
+.goal-preview-text {
+  font-size: 28rpx; font-weight: 600; color: var(--text); line-height: 1.6;
+}
+
+/* ── 提交栏 ── */
+.submit-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  padding: 20rpx 24rpx;
+  background: var(--white);
+  border-top: 1rpx solid var(--border);
+}
+.submit-btn {
+  height: 88rpx; border-radius: 44rpx;
+  background: linear-gradient(135deg, #FF6B35, #FF8F5E);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30rpx; font-weight: 700; color: #fff;
+  box-shadow: 0 8rpx 24rpx rgba(255,107,53,.35);
+}
+
+/* ── 底部安全距离（让 scroll-view 不被 submit-bar 遮住）── */
+.bottom-safe { height: 160rpx; }

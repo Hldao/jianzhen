@@ -1,0 +1,85 @@
+<!-- 导航栏 -->
+<view class="navbar" style="padding-top:{{statusBarHeight}}px;">
+  <view class="navbar-inner" style="height:{{navBarHeight}}px;">
+    <view class="nb-back" bindtap="goBack">
+      <view class="lc lc-md lc-gray lc-chevron-left"></view>
+    </view>
+    <text class="nb-title">发布者中心</text>
+    <view style="width:64rpx;"></view>
+  </view>
+</view>
+
+<scroll-view
+  scroll-y enhanced show-scrollbar="{{false}}"
+  class="scroll-body"
+  style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);"
+>
+
+  <!-- 封面 -->
+  <view class="pub-cover">
+    <view class="pub-cover-deco"></view>
+    <text class="pub-name">{{orgName}}</text>
+    <view class="pub-badge-row">
+      <text class="pub-badge">已认证赛事方</text>
+    </view>
+    <view class="pub-stats-row">
+      <view class="pub-stat">
+        <text class="pub-stat-num">{{publishedCount}}</text>
+        <text class="pub-stat-lbl">已发布赛事</text>
+      </view>
+      <view class="pub-stat-vline"></view>
+      <view class="pub-stat">
+        <text class="pub-stat-num">{{totalRegs}}</text>
+        <text class="pub-stat-lbl">总报名人数</text>
+      </view>
+      <view class="pub-stat-vline"></view>
+      <view class="pub-stat">
+        <text class="pub-stat-num">{{pendingCount}}</text>
+        <text class="pub-stat-lbl">待确认</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 功能菜单 -->
+  <view class="pub-menu">
+
+    <view class="pub-menu-item" bindtap="openCreateEvent">
+      <view class="pub-menu-icon pub-icon-orange">
+        <view class="lc lc-md lc-orange lc-calendar-plus"></view>
+      </view>
+      <view class="pub-menu-info">
+        <text class="pub-menu-label">发布赛事</text>
+        <text class="pub-menu-sub">创建新的射箭赛事</text>
+      </view>
+      <view class="lc lc-sm lc-gray lc-chevron-right"></view>
+    </view>
+
+    <view class="pub-menu-item" bindtap="openRegManage">
+      <view class="pub-menu-icon pub-icon-blue">
+        <view class="lc lc-md lc-blue lc-clipboard-list"></view>
+      </view>
+      <view class="pub-menu-info">
+        <text class="pub-menu-label">报名管理</text>
+        <text class="pub-menu-sub">查看 · 审核 · 确认报名</text>
+      </view>
+      <view wx:if="{{pendingCount > 0}}" class="pub-pending-badge">
+        <text>{{pendingCount}}待审</text>
+      </view>
+      <view class="lc lc-sm lc-gray lc-chevron-right"></view>
+    </view>
+
+    <view class="pub-menu-item" bindtap="openMyPublished">
+      <view class="pub-menu-icon pub-icon-green">
+        <view class="lc lc-md lc-green lc-calendar-check"></view>
+      </view>
+      <view class="pub-menu-info">
+        <text class="pub-menu-label">我的赛事</text>
+        <text class="pub-menu-sub">管理已发布的赛事</text>
+      </view>
+      <view class="lc lc-sm lc-gray lc-chevron-right"></view>
+    </view>
+
+  </view>
+
+  <view class="bottom-safe"></view>
+</scroll-view>

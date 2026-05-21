@@ -1,0 +1,100 @@
+<!-- 导航栏 -->
+<view class="navbar" style="padding-top:{{statusBarHeight}}px;">
+  <view class="navbar-inner" style="height:{{navBarHeight}}px;">
+    <view class="nb-back" bindtap="goBack">
+      <view class="lc lc-md lc-gray lc-chevron-left"></view>
+    </view>
+    <text class="nb-title">报名管理</text>
+    <view style="width:64rpx;"></view>
+  </view>
+</view>
+
+<!-- 筛选 Tab -->
+<view class="filter-bar" style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);">
+  <view
+    wx:for="{{tabs}}" wx:key="key"
+    class="filter-tab {{activeTab === item.key ? 'filter-tab-active' : ''}}"
+    bindtap="switchTab" data-tab="{{item.key}}"
+  >
+    <text>{{item.label}}</text>
+    <view wx:if="{{item.key === 'pending' && pendingCount > 0}}" class="tab-badge">
+      <text>{{pendingCount}}</text>
+    </view>
+  </view>
+</view>
+
+<scroll-view
+  scroll-y enhanced show-scrollbar="{{false}}"
+  class="scroll-body"
+  style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px + 88rpx);"
+  bindscrolltolower="loadMore"
+>
+
+  <!-- 加载骨架 -->
+  <view wx:if="{{loading}}" class="skeleton-list">
+    <view wx:for="{{[1,2,3]}}" wx:key="*this" class="rm-item rm-item-sk">
+      <view class="rm-sk-top">
+        <view class="rm-sk-avatar"></view>
+        <view class="rm-sk-lines">
+          <view class="rm-sk-line rm-sk-line-a"></view>
+          <view class="rm-sk-line rm-sk-line-b"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:elif="{{list.length === 0}}" class="empty-state">
+    <view class="lc lc-xl lc-gray lc-inbox"></view>
+    <text class="empty-title">暂无{{currentTabLabel}}报名</text>
+  </view>
+
+  <!-- 报名列表 -->
+  <view wx:else class="rm-list">
+    <view wx:for="{{list}}" wx:key="_id" class="rm-item">
+
+      <!-- 头部：头像 + 姓名 + 状态 -->
+      <view class="rm-top">
+        <view class="rm-avatar">
+          <text>{{item.name[0]}}</text>
+        </view>
+        <view class="rm-info">
+          <text class="rm-name">{{item.name}}</text>
+          <text class="rm-cat">{{item.category}}</text>
+        </view>
+        <view class="rm-badge rm-badge-{{item.statusCls}}">
+          <text>{{item.statusLabel}}</text>
+        </view>
+      </view>
+
+      <!-- 元信息 -->
+      <view class="rm-meta-row">
+        <text class="rm-time">报名于 {{item.regTime}}</text>
+        <text class="rm-fee">¥{{item.fee}}</text>
+      </view>
+
+      <!-- 操作按钮（仅待确认显示确认/拒绝） -->
+      <view wx:if="{{item.statusCls === 'pending'}}" class="rm-actions">
+        <view class="rm-btn rm-btn-confirm" bindtap="confirmReg" data-id="{{item._id}}">
+          <text>确认报名</text>
+        </view>
+        <view class="rm-btn rm-btn-reject" bindtap="rejectReg" data-id="{{item._id}}">
+          <text>拒绝</text>
+        </view>
+        <view class="rm-btn rm-btn-call" bindtap="callPhone" data-phone="{{item.phone}}">
+          <text>联系</text>
+        </view>
+      </view>
+
+      <!-- 已确认仅显示联系 -->
+      <view wx:elif="{{item.statusCls === 'confirmed'}}" class="rm-actions">
+        <view class="rm-btn rm-btn-call" bindtap="callPhone" data-phone="{{item.phone}}">
+          <text>联系参赛者</text>
+        </view>
+      </view>
+
+    </view>
+  </view>
+
+  <view class="bottom-safe"></view>
+</scroll-view>

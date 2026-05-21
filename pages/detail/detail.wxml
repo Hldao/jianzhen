@@ -1,0 +1,179 @@
+<!-- 导航栏 -->
+<view class="navbar" style="padding-top:{{statusBarHeight}}px;">
+  <view class="navbar-inner" style="height:{{navBarHeight}}px;">
+    <view class="nb-back" bindtap="goBack">
+      <view class="nb-back-arrow"></view>
+    </view>
+    <text class="nb-title">{{record.dateStr}} 训练详情</text>
+    <view class="nb-right"></view>
+  </view>
+</view>
+
+<scroll-view
+  scroll-y enhanced show-scrollbar="{{false}}"
+  class="scroll-body"
+  style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);"
+>
+
+<!-- ── 训练配置 ── -->
+<view class="section-card">
+  <view class="sc-title-row">
+    <text class="sc-icon">⚙️</text>
+    <text class="sc-title">训练配置</text>
+  </view>
+  <view class="config-tags">
+    <text class="cfg-tag">{{record.bowType}}</text>
+    <text class="cfg-tag">{{record.distance}}</text>
+    <text class="cfg-tag">{{record.targetSize}}靶</text>
+    <text class="cfg-tag cfg-tag-mode">{{record.mode}}</text>
+  </view>
+  <view wx:if="{{record.durationMin > 0}}" class="config-duration">
+    <text class="dur-label">训练时长</text>
+    <text class="dur-val">{{record.durationMin}} 分钟</text>
+  </view>
+</view>
+
+<!-- ── 成绩概览 ── -->
+<view class="overview-card">
+  <view class="sc-title-row">
+    <text class="sc-icon">📊</text>
+    <text class="sc-title ov-title">成绩概览</text>
+  </view>
+  <view class="ov-stats">
+    <view class="ov-stat">
+      <text class="ov-num">{{record.totalScore}}</text>
+      <text class="ov-lbl">总环值</text>
+    </view>
+    <view class="ov-vline"></view>
+    <view class="ov-stat">
+      <text class="ov-num">{{record.totalArrows}}</text>
+      <text class="ov-lbl">总箭数</text>
+    </view>
+    <view class="ov-vline"></view>
+    <view class="ov-stat">
+      <text class="ov-num">{{record.avgPerArrow}}</text>
+      <text class="ov-lbl">均环/支</text>
+    </view>
+  </view>
+  <view class="ov-divider"></view>
+  <view class="ov-row2">
+    <view class="ov-row2-item">
+      <text class="ov-r2-val">{{record.bestEndTotal}}环</text>
+      <text class="ov-r2-lbl">最佳一轮</text>
+    </view>
+    <view class="ov-row2-sep"></view>
+    <view class="ov-row2-item">
+      <text class="ov-r2-val">{{xTenCount}}支 ({{xTenPct}}%)</text>
+      <text class="ov-r2-lbl">X/10环</text>
+    </view>
+  </view>
+</view>
+
+<!-- ── 每支箭明细 ── -->
+<view class="section-card">
+  <view class="sc-title-row">
+    <text class="sc-icon">🎯</text>
+    <text class="sc-title">每支箭明细</text>
+  </view>
+
+  <view class="arrow-list">
+    <view
+      wx:for="{{arrowDisplay}}" wx:key="endNum"
+      class="arrow-end {{item.isBest ? 'arrow-end-best' : ''}}"
+    >
+      <view class="ae-header">
+        <text class="ae-label">第{{item.endNum}}轮</text>
+        <view class="ae-slots">
+          <view
+            wx:for="{{item.slots}}" wx:key="index" wx:for-item="slot"
+            class="ae-slot ae-slot-{{slot.cls}}"
+          >
+            <text class="ae-slot-txt">{{slot.score}}</text>
+          </view>
+        </view>
+        <text class="ae-total">{{item.total}}</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- ── 训练笔记 ── -->
+<view class="section-card">
+  <view class="sc-title-row">
+    <text class="sc-icon">📝</text>
+    <text class="sc-title">训练笔记</text>
+  </view>
+
+  <view wx:if="{{!editingNote}}">
+    <text wx:if="{{record.note}}" class="note-content">"{{record.note}}"</text>
+    <text wx:else class="note-empty">暂无笔记，记录今天的感受</text>
+    <view class="note-edit-btn" bindtap="startEditNote">
+      <text class="note-edit-txt">{{record.note ? '编辑笔记' : '添加笔记'}} ›</text>
+    </view>
+  </view>
+
+  <view wx:else>
+    <textarea
+      class="note-textarea"
+      value="{{noteInput}}"
+      bindinput="onNoteChange"
+      placeholder="记录今天的感受、状态或改进点..."
+      placeholder-class="note-ph"
+      maxlength="200"
+      auto-height
+    ></textarea>
+    <view class="note-btn-row">
+      <view class="note-btn-cancel" bindtap="cancelEdit">取消</view>
+      <view class="note-btn-save" bindtap="saveNote">保存</view>
+    </view>
+  </view>
+</view>
+
+<!-- ── 训练照片 ── -->
+<view class="section-card">
+  <view class="sc-title-row">
+    <text class="sc-icon">📸</text>
+    <text class="sc-title">训练照片</text>
+  </view>
+  <view class="media-placeholder" bindtap="addMedia">
+    <text class="media-ph-icon">＋</text>
+    <text class="media-ph-txt">添加照片或视频</text>
+  </view>
+</view>
+
+<!-- ── 智能洞察 ── -->
+<view class="insight-card">
+  <view class="sc-title-row">
+    <text class="sc-icon">⚡</text>
+    <text class="sc-title insight-title-txt">智能洞察</text>
+  </view>
+  <view class="insight-list">
+    <view wx:for="{{insights}}" wx:key="index" class="insight-item">
+      <view class="insight-dot"></view>
+      <text class="insight-txt">{{item}}</text>
+    </view>
+  </view>
+</view>
+
+<!-- ── 分享按钮 ── -->
+<view class="share-btn" bindtap="openShare">
+  <text class="share-btn-txt">✦  生成分享图，发朋友圈</text>
+</view>
+
+<view class="bottom-safe"></view>
+</scroll-view>
+
+<!-- 隐藏的画布，用于生成分享图 -->
+<canvas type="2d" id="shareCanvas" class="share-canvas-hidden"></canvas>
+
+<!-- ── 分享预览弹层 ── -->
+<view wx:if="{{showShare}}" class="share-modal" catchtap="dismissShare">
+  <view class="share-modal-card" catchtap="">
+    <image wx:if="{{shareImagePath}}" class="share-preview-img" src="{{shareImagePath}}" mode="widthFix" show-menu-by-longpress="{{true}}"></image>
+    <text class="share-preview-hint">长按图片可直接转发；或点击下方保存到相册再发朋友圈</text>
+    <view class="share-modal-btns">
+      <view class="share-modal-btn share-modal-btn-cancel" bindtap="dismissShare">取消</view>
+      <view class="share-modal-btn share-modal-btn-save" bindtap="saveToAlbum">保存到相册</view>
+    </view>
+  </view>
+</view>

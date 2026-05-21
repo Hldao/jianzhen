@@ -1,0 +1,193 @@
+<!-- 导航栏（Tab 页，无返回按钮）-->
+<view class="navbar" style="padding-top:{{statusBarHeight}}px;">
+  <view class="navbar-inner" style="height:{{navBarHeight}}px;">
+    <text class="nb-title">数据分析</text>
+    <view class="capsule-gap"></view>
+  </view>
+</view>
+
+<scroll-view
+  scroll-y enhanced show-scrollbar="{{false}}"
+  class="scroll-body"
+  style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);"
+>
+
+  <!-- ── 加载骨架 ── -->
+  <block wx:if="{{loading}}">
+    <view class="hero-card">
+      <view class="sk-hero-top">
+        <view class="sk-line sk-line-sm"></view>
+        <view class="sk-line sk-line-sm"></view>
+      </view>
+      <view class="sk-nums">
+        <view class="sk-num"></view>
+        <view class="sk-num"></view>
+        <view class="sk-num"></view>
+      </view>
+      <view class="sk-bar-hero"></view>
+    </view>
+    <view class="section-card sk-chart-card">
+      <view class="sk-line sk-line-md" style="margin-bottom:28rpx;"></view>
+      <view class="sk-bars">
+        <view wx:for="{{[1,2,3,4,5,6,7]}}" wx:key="*this" class="sk-bar-col">
+          <view class="sk-bar" style="height:{{30 + item * 15}}rpx;"></view>
+          <view class="sk-bar-lbl"></view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- ── 空状态 ── -->
+  <block wx:elif="{{isEmpty}}">
+    <view class="empty-state">
+      <view class="es-icon-wrap">
+        <view class="lc lc-lg lc-indigo lc-trending-up"></view>
+      </view>
+      <text class="es-title">数据正在等你创造</text>
+      <text class="es-desc">完成训练后，这里将展示你的\n成绩趋势、分析与进步轨迹</text>
+      <button class="es-btn" bindtap="goTraining">开始第一次训练</button>
+    </view>
+  </block>
+
+  <!-- ── 正式内容 ── -->
+  <block wx:else>
+
+    <!-- 全局汇总条（深蓝渐变）-->
+    <view class="stats-strip">
+      <view class="ss-item">
+        <text class="ss-num">{{totalSessions}}</text>
+        <text class="ss-lbl">训练次数</text>
+      </view>
+      <view class="ss-vline"></view>
+      <view class="ss-item">
+        <text class="ss-num">{{totalArrows}}</text>
+        <text class="ss-lbl">总箭数</text>
+      </view>
+      <view class="ss-vline"></view>
+      <view class="ss-item">
+        <text class="ss-num">{{overallAvg}}</text>
+        <text class="ss-lbl">均环/支</text>
+      </view>
+      <view class="ss-vline"></view>
+      <view class="ss-item">
+        <text class="ss-num">{{bestEnd}}</text>
+        <text class="ss-lbl">单轮最高</text>
+      </view>
+    </view>
+
+    <!-- 本周概览卡 -->
+    <view class="hero-card">
+      <view class="hc-top">
+        <text class="hc-label">本周最高成绩</text>
+        <text class="hc-week">{{weekLabel}}</text>
+      </view>
+
+      <view class="hc-stats">
+        <view class="hc-stat">
+          <text class="hc-num">{{weekBestDisplay}}</text>
+          <text class="hc-sub">最高环</text>
+        </view>
+        <view class="hc-divider"></view>
+        <view class="hc-stat">
+          <text class="hc-num">{{weekCount}}</text>
+          <text class="hc-sub">次训练</text>
+        </view>
+        <view class="hc-divider"></view>
+        <view class="hc-stat">
+          <text class="hc-num {{showImprove ? (weekImproveUp ? 'hc-num-up' : 'hc-num-dn') : ''}}">
+            {{weekImproveTxt}}
+          </text>
+          <text class="hc-sub">较上周</text>
+        </view>
+      </view>
+
+      <view wx:if="{{weekBestMode}}" class="hc-meta-row">
+        <text class="hc-mode-tag">{{weekBestMode}}</text>
+        <text class="hc-meta-txt">{{weekBestMeta}}</text>
+      </view>
+
+    </view>
+
+    <!-- 训练趋势折线图 -->
+    <view wx:if="{{sessions.length > 1}}" class="section-card">
+      <view class="chart-hd">
+        <text class="chart-title">训练趋势</text>
+        <view class="chart-metric-tabs">
+          <view class="cmt {{chartMetric==='avg'?'cmt-on':''}}" bindtap="setChartMetric" data-metric="avg">均环/支</view>
+          <view class="cmt {{chartMetric==='xten'?'cmt-on':''}}" bindtap="setChartMetric" data-metric="xten">X/10%</view>
+        </view>
+      </view>
+      <view class="chart-range-tabs">
+        <view class="crt {{chartRange===30?'crt-on':''}}" bindtap="setChartRange" data-range="30">近30天</view>
+        <view class="crt {{chartRange===90?'crt-on':''}}" bindtap="setChartRange" data-range="90">近90天</view>
+        <view class="crt {{chartRange===0?'crt-on':''}}" bindtap="setChartRange" data-range="0">全部</view>
+      </view>
+      <view wx:if="{{chartEmpty}}" class="chart-empty">数据不足，请切换时间范围</view>
+      <canvas wx:else type="2d" id="data-trend-canvas" class="trend-canvas"></canvas>
+      <view wx:if="{{chartTrend}}" class="chart-trend">{{chartTrend}}</view>
+      <view class="chart-legend">
+        <view class="cl-item"><view class="cl-dot" style="background:#2563EB"></view><text class="cl-txt">70m</text></view>
+        <view class="cl-item"><view class="cl-dot" style="background:#10B981"></view><text class="cl-txt">30m</text></view>
+        <view class="cl-item"><view class="cl-dot" style="background:#FF6B35"></view><text class="cl-txt">18m</text></view>
+        <view class="cl-item cl-item-ma"><view class="cl-ma-line"></view><text class="cl-txt">7日均线</text></view>
+      </view>
+    </view>
+
+    <!-- 本周柱状图 -->
+    <view class="section-card">
+      <text class="chart-title">本周训练 · 环数记录</text>
+      <view class="bar-chart">
+        <view wx:for="{{barData}}" wx:key="day" class="bar-col">
+          <text class="bar-val {{item.today ? 'bar-val-today' : ''}}">
+            {{item.empty ? '' : item.score}}
+          </text>
+          <view class="bar-wrap">
+            <view
+              class="bar {{item.today ? 'bar-today' : item.future ? 'bar-future' : item.empty ? 'bar-empty' : 'bar-active'}}"
+              style="height:{{item.heightRpx}}rpx;"
+            ></view>
+          </view>
+          <text class="bar-lbl {{item.today ? 'bar-lbl-today' : ''}}">{{item.day}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 近期训练记录（可点击跳详情）-->
+    <view wx:if="{{sessions.length}}" class="section-card">
+      <view class="section-hd">
+        <text class="section-title">近期训练</text>
+        <text class="section-more" bindtap="goHistory">全部记录 ›</text>
+      </view>
+
+      <view
+        wx:for="{{sessions}}" wx:key="_id"
+        class="session-item {{index === sessions.length - 1 ? 'session-last' : ''}}"
+        hover-class="session-item-hover"
+        hover-stay-time="150"
+        bindtap="openSession" data-rid="{{item._id}}"
+      >
+        <view class="session-icon-wrap">
+          <view class="lci-target session-icon-target"></view>
+        </view>
+        <view class="session-info">
+          <text class="session-name">{{item.mode}} · {{item.distance}} · {{item.targetSize}}</text>
+          <text class="session-meta">{{item.date}} · {{item.totalEnds}}组 {{item.totalArrows}}支</text>
+        </view>
+        <view class="session-score">
+          <text class="session-ring">{{item.totalScore}}</text>
+          <text class="session-dist">环</text>
+        </view>
+        <view class="lc lc-sm lc-gray lc-chevron-right session-arrow"></view>
+      </view>
+    </view>
+
+    <!-- 本周无记录 -->
+    <view wx:if="{{isWeekEmpty}}" class="week-empty-tip">
+      <text class="wet-text">本周还没有训练记录</text>
+      <text class="wet-sub" bindtap="goTraining">去训练 ›</text>
+    </view>
+
+  </block>
+
+  <view class="bottom-safe"></view>
+</scroll-view>

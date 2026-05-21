@@ -1,0 +1,196 @@
+<!-- 自定义顶部导航栏 -->
+<view class="navbar" style="padding-top:{{statusBarHeight}}px;">
+  <view class="navbar-inner" style="height:{{navBarHeight}}px;">
+    <view class="nb-left"></view>
+    <view class="nb-title">
+      <view class="lc lc-crosshair nb-icon-bow"></view>
+      <text class="nb-title-txt">箭证</text>
+    </view>
+    <view class="capsule-gap"></view>
+  </view>
+</view>
+
+<!-- 页面内容 -->
+<scroll-view
+  class="page-content"
+  scroll-y enhanced show-scrollbar="{{false}}"
+  style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);"
+>
+
+  <!-- ── 连续训练卡（合并周概览） ── -->
+  <view class="hero-card hero-{{streakState}}">
+    <view wx:if="{{showQuote}}" class="hc-quote">
+      <view class="hq-line"></view>
+      <text class="hq-text">{{quoteText}}</text>
+      <text wx:if="{{quoteAuthor}}" class="hq-author">{{quoteAuthor}}</text>
+    </view>
+
+    <view class="hc-streak-row">
+      <view class="lc hc-si hc-si-{{streakState}} {{streakState === 'active' ? 'lc-flame' : streakState === 'frozen' ? 'lc-snowflake' : 'lc-circle-x'}}"></view>
+      <view class="hc-streak-info">
+        <view class="hc-big-row">
+          <text class="hc-big-num">{{streakNum}}</text>
+          <view class="hc-big-suffix">
+            <text class="hc-big-unit">天</text>
+            <text wx:if="{{streakTag}}" class="hc-big-tag">{{streakTag}}</text>
+          </view>
+        </view>
+        <text class="hc-streak-sub">{{streakSub}}</text>
+      </view>
+    </view>
+
+    <view class="hc-days">
+      <view wx:for="{{last7}}" wx:key="index" class="hc-day {{item ? 'hc-day-on' : ''}}"></view>
+    </view>
+
+    <view class="hc-bstats">
+      <text class="hc-bst">本周 {{weekCount}} 次</text>
+      <text class="hc-bsep">·</text>
+      <text class="hc-bst">均环 {{weekAvgStr}}</text>
+      <block wx:if="{{showDiff}}">
+        <text class="hc-bsep">·</text>
+        <text class="hc-bst {{weekDiffUp ? 'hc-bst-up' : 'hc-bst-dn'}}">{{weekDiffStr}}</text>
+      </block>
+    </view>
+
+    <!-- 训练目标面板 -->
+    <view wx:if="{{goalSet}}" class="sk-goal-panel">
+      <view class="sk-goal-hd">
+        <text class="sk-goal-label">训练目标</text>
+        <view class="sk-goal-right">
+          <text class="sk-goal-tag">{{goalDist}}</text>
+          <text class="sk-goal-tag">{{goalBow}}</text>
+          <view class="sk-goal-edit" bindtap="goGoal">修改</view>
+        </view>
+      </view>
+      <view class="sk-goal-inline">
+        <text class="sk-goal-score">{{goalCurrent}}</text>
+        <text class="sk-goal-of">/ {{goalTarget}} 环</text>
+        <view class="sk-goal-bar">
+          <view class="sk-goal-fill {{goalDone ? 'sk-goal-fill-done' : ''}}" style="width:{{goalPct}}%;"></view>
+        </view>
+        <text class="sk-goal-pct">{{goalPct}}%</text>
+      </view>
+      <view class="sk-goal-foot">
+        <text>{{goalDone ? '🎉 已达成目标！' : '还差 ' + goalDiff + ' 环'}}</text>
+        <text>{{goalDeadlineStr}} · 剩 {{goalDaysLeft}} 天</text>
+      </view>
+    </view>
+    <view wx:else class="sk-goal-empty" bindtap="goGoal">
+      <text class="sk-goal-empty-txt">设定训练目标，追踪进步</text>
+      <text class="sk-goal-empty-btn">设定 →</text>
+    </view>
+  </view>
+
+  <!-- ── 开始训练按钮 ── -->
+  <button class="btn-start" hover-class="btn-start-hover" bindtap="openTraining">
+    <view class="lc lc-arrow-up-right btn-bow-icon"></view>
+    <text>开始新训练</text>
+  </button>
+
+  <!-- ── 快捷入口 ── -->
+  <view class="quick-grid">
+    <view class="quick-card" bindtap="openHistory">
+      <view class="qc-icon" style="background:rgba(16,185,129,.1);">
+        <view class="lc qc-svg lc-clock lc-green"></view>
+      </view>
+      <text class="qc-title">历史记录</text>
+      <text class="qc-sub">共{{totalSessions}}次训练</text>
+    </view>
+    <view class="quick-card" bindtap="openStats">
+      <view class="qc-icon" style="background:rgba(99,102,241,.1);">
+        <view class="lc qc-svg lc-trending-up lc-indigo"></view>
+      </view>
+      <text class="qc-title">数据分析</text>
+      <text class="qc-sub">本周趋势</text>
+    </view>
+  </view>
+
+  <!-- ── 社区动态 ── -->
+  <view class="section-card">
+    <view class="section-hd">
+      <text class="section-title">社区动态</text>
+      <text wx:if="{{feeds.length}}" class="section-more" bindtap="goExplore">发现箭友 ›</text>
+    </view>
+
+    <!-- 加载中骨架 -->
+    <view wx:if="{{feedLoading}}" class="feed-skeleton">
+      <view wx:for="{{[1,2]}}" wx:key="*this" class="feed-skeleton-row">
+        <view class="fsk-avatar"></view>
+        <view class="fsk-lines">
+          <view class="fsk-line fsk-line-a"></view>
+          <view class="fsk-line fsk-line-b"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态：还没有任何人的训练记录 -->
+    <view wx:elif="{{feedEmpty}}" class="feed-empty">
+      <view class="fe-icon-target lci-target"></view>
+      <text class="fe-title">社区还没有动态</text>
+      <text class="fe-desc">完成第一次训练后\n你的成绩会出现在这里</text>
+      <view class="fe-actions">
+        <button class="fe-btn-primary" bindtap="openTraining">开始训练</button>
+        <button class="fe-btn-secondary" bindtap="shareApp">邀请好友</button>
+      </view>
+    </view>
+
+    <!-- 有数据 -->
+    <block wx:else>
+      <view
+        wx:for="{{feeds}}"
+        wx:key="_id"
+        class="feed-item {{item.isMine ? 'feed-item-mine' : ''}}"
+      >
+        <image
+          wx:if="{{item.user.avatarUrl}}"
+          class="feed-avatar feed-avatar-img"
+          src="{{item.user.avatarUrl}}"
+          mode="aspectFill"
+        ></image>
+        <view wx:else class="feed-avatar feed-avatar-txt">
+          <text>{{item.user.nickName[0]}}</text>
+        </view>
+        <view class="feed-body">
+          <view class="feed-top">
+            <view class="feed-name-row">
+              <text class="feed-name">{{item.isMine ? '我' : item.user.nickName}}</text>
+              <view wx:if="{{item.sourceType === 'wx_friend'}}" class="feed-source feed-source-wx">
+                <text>微信好友</text>
+              </view>
+              <view wx:elif="{{item.sourceType === 'club'}}" class="feed-source feed-source-club">
+                <text>俱乐部</text>
+              </view>
+            </view>
+            <text class="feed-time">{{item.timeLabel}}</text>
+          </view>
+          <view class="feed-desc-row">
+            <text class="feed-desc">完成{{item.mode}} · {{item.distance}} · </text><text class="feed-desc-em">{{item.totalScore}}环</text>
+          </view>
+          <text wx:if="{{item.note}}" class="feed-note">{{item.note}}</text>
+          <text wx:if="{{item.tag}}" class="feed-tag">{{item.tag}}</text>
+          <view class="feed-actions">
+            <view
+              class="feed-like-btn {{item.liked ? 'feed-like-btn-liked' : ''}}"
+              bindtap="toggleLike" data-index="{{index}}"
+            >
+              <view class="lc lc-xs {{item.liked ? 'lc-red lc-heart-solid' : 'lc-gray lc-heart'}}"></view>
+              <text>{{item.likes}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 邀请好友卡 -->
+      <view class="feed-invite" bindtap="shareApp">
+        <view class="fi-icon">
+          <view class="lc lc-sm lc-green lc-users"></view>
+        </view>
+        <text class="fi-txt">还有好友在练箭，邀请他们加入</text>
+        <view class="fi-btn">邀请</view>
+      </view>
+    </block>
+  </view>
+
+  <view class="bottom-safe"></view>
+</scroll-view>

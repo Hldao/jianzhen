@@ -1,0 +1,186 @@
+<!-- 自定义顶部导航栏 -->
+<view class="navbar" style="padding-top:{{statusBarHeight}}px;">
+  <view class="navbar-inner" style="height:{{navBarHeight}}px;">
+    <view class="nb-back" bindtap="goBack">
+      <text class="nb-back-icon">‹</text>
+    </view>
+    <text class="nb-title">发现箭友</text>
+    <view class="nb-right"></view>
+  </view>
+</view>
+
+<!-- 页面内容 -->
+<scroll-view
+  class="page-content"
+  scroll-y enhanced show-scrollbar="{{false}}"
+  style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);"
+>
+
+  <!-- ── Tab 切换 ── -->
+  <view class="tab-switch">
+    <view
+      class="ts-item {{activeTab === 'users' ? 'ts-active' : ''}}"
+      bindtap="switchTab"
+      data-tab="users"
+    >
+      <text>箭友</text>
+    </view>
+    <view
+      class="ts-item {{activeTab === 'clubs' ? 'ts-active' : ''}}"
+      bindtap="switchTab"
+      data-tab="clubs"
+    >
+      <text>俱乐部</text>
+    </view>
+    <view class="ts-indicator {{activeTab === 'clubs' ? 'ts-indicator-right' : ''}}"></view>
+  </view>
+
+  <!-- ══ 箭友 Tab ══ -->
+  <block wx:if="{{activeTab === 'users'}}">
+
+    <!-- 加载中 -->
+    <view wx:if="{{usersLoading}}" class="skeleton-list">
+      <view wx:for="{{[1,2,3,4]}}" wx:key="*this" class="skeleton-row">
+        <view class="sk-avatar"></view>
+        <view class="sk-lines">
+          <view class="sk-line sk-line-a"></view>
+          <view class="sk-line sk-line-b"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view wx:elif="{{users.length === 0}}" class="empty-state">
+      <view class="es-icon">🏹</view>
+      <text class="es-title">还没有其他箭友</text>
+      <text class="es-desc">邀请你的弓箭伙伴加入\n一起记录训练、共同进步</text>
+      <button class="es-btn" bindtap="shareApp">邀请好友</button>
+    </view>
+
+    <!-- 用户列表 -->
+    <view wx:else class="section-card">
+      <view class="section-hd">
+        <text class="section-title">正在使用箭证</text>
+        <text class="section-sub">{{users.length}}人</text>
+      </view>
+      <view wx:for="{{users}}" wx:key="openid" class="user-row">
+        <view class="user-avatar user-avatar-txt">
+          <text>{{item.nickName[0]}}</text>
+        </view>
+        <view class="user-info">
+          <text class="user-name">{{item.nickName}}</text>
+          <text class="user-sub">{{item.sessionCount ? item.sessionCount + '次训练' : '刚刚加入'}}</text>
+        </view>
+        <view wx:if="{{item.recentScore}}" class="score-badge">
+          <text class="score-num">{{item.recentScore}}</text>
+          <text class="score-unit">环</text>
+        </view>
+      </view>
+    </view>
+
+  </block>
+
+  <!-- ══ 俱乐部 Tab ══ -->
+  <block wx:if="{{activeTab === 'clubs'}}">
+
+    <!-- 搜索框 + 创建 -->
+    <view class="search-bar">
+      <text class="search-icon">🔍</text>
+      <input
+        class="search-input"
+        placeholder="搜索俱乐部名称"
+        value="{{clubKeyword}}"
+        bindinput="onClubSearch"
+        confirm-type="search"
+      />
+      <view class="search-create-btn" bindtap="openCreateClub">
+        <text class="scb-icon">＋</text>
+        <text class="scb-txt">创建</text>
+      </view>
+    </view>
+
+    <!-- 加载中 -->
+    <view wx:if="{{clubsLoading}}" class="skeleton-list">
+      <view wx:for="{{[1,2,3]}}" wx:key="*this" class="skeleton-row">
+        <view class="sk-avatar"></view>
+        <view class="sk-lines">
+          <view class="sk-line sk-line-a"></view>
+          <view class="sk-line sk-line-b"></view>
+        </view>
+        <view class="sk-btn"></view>
+      </view>
+    </view>
+
+    <!-- 俱乐部列表 -->
+    <view wx:elif="{{clubs.length}}" class="section-card">
+      <view wx:for="{{clubs}}" wx:key="_id" class="club-row">
+        <view class="club-avatar">
+          <text class="club-avatar-emoji">🏹</text>
+        </view>
+        <view class="club-info">
+          <text class="club-name">{{item.name}}</text>
+          <text class="club-sub">{{item.memberCount}}名成员 · {{item.city}}</text>
+        </view>
+        <view
+          class="join-btn {{item.isJoined ? 'join-btn-done' : ''}}"
+          catchtap="toggleJoin"
+          data-id="{{item._id}}"
+          data-index="{{index}}"
+        >
+          <text>{{item.isJoined ? '已加入' : '加入'}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view wx:elif="{{!clubsLoading}}" class="empty-state">
+      <view class="es-icon">🏟</view>
+      <text class="es-title">{{clubKeyword ? '未找到相关俱乐部' : '暂无俱乐部'}}</text>
+      <text class="es-desc">{{clubKeyword ? '换个关键词试试，或者' : '成为第一个创建俱乐部的箭手'}}</text>
+      <button class="es-btn" bindtap="openCreateClub">创建俱乐部</button>
+    </view>
+
+  </block>
+
+  <view class="bottom-safe"></view>
+</scroll-view>
+
+<!-- 创建俱乐部弹层 -->
+<view wx:if="{{showCreateClub}}" class="cc-mask" catchtap="closeCreateClub">
+  <view class="cc-card" catchtap="noop">
+    <text class="cc-title">创建俱乐部</text>
+    <text class="cc-sub">向社区添加你的俱乐部，方便箭友找到</text>
+
+    <view class="cc-field">
+      <text class="cc-label">俱乐部名称<text class="cc-required">*</text></text>
+      <input
+        class="cc-input"
+        placeholder="2-30 字"
+        maxlength="30"
+        value="{{newClubName}}"
+        bindinput="inputNewClubName"
+        focus="{{showCreateClub}}"
+        adjust-position="{{false}}"
+      />
+    </view>
+
+    <view class="cc-field">
+      <text class="cc-label">所在城市<text class="cc-opt"> · 选填</text></text>
+      <input
+        class="cc-input"
+        placeholder="如：北京、上海"
+        maxlength="20"
+        value="{{newClubCity}}"
+        bindinput="inputNewClubCity"
+      />
+    </view>
+
+    <view class="cc-btns">
+      <view class="cc-btn cc-btn-cancel" bindtap="closeCreateClub">取消</view>
+      <view
+        class="cc-btn cc-btn-create {{creatingClub ? 'cc-btn-loading' : ''}}"
+        bindtap="submitCreateClub"
+      >{{creatingClub ? '创建中…' : '创建'}}</view>
+    </view>
+  </view>
+</view>

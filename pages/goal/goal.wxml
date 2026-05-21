@@ -1,0 +1,70 @@
+<!-- 导航栏 -->
+<view class="navbar" style="padding-top:{{statusBarHeight}}px;">
+  <view class="navbar-inner" style="height:{{navBarHeight}}px;">
+    <view class="nb-back" bindtap="goBack"><text class="nb-back-icon">‹</text></view>
+    <text class="nb-title">设定训练目标</text>
+    <view style="width:64rpx;"></view>
+  </view>
+</view>
+
+<scroll-view
+  scroll-y enhanced show-scrollbar="{{false}}"
+  class="scroll-body"
+  style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);"
+>
+  <view class="goal-section">
+    <text class="goal-section-title">目标距离</text>
+    <view class="chips">
+      <view
+        wx:for="{{distOptions}}" wx:key="*this"
+        class="chip {{goalDist === item ? 'chip-on' : ''}}"
+        bindtap="pickDist" data-val="{{item}}"
+      >{{item}}</view>
+    </view>
+  </view>
+
+  <view class="goal-section">
+    <text class="goal-section-title">弓种</text>
+    <view class="chips">
+      <view
+        wx:for="{{bowOptions}}" wx:key="*this"
+        class="chip {{goalBow === item ? 'chip-on' : ''}}"
+        bindtap="pickBow" data-val="{{item}}"
+      >{{item}}</view>
+    </view>
+  </view>
+
+  <view class="goal-section">
+    <text class="goal-section-title">目标环数</text>
+    <input
+      class="goal-input"
+      type="number"
+      placeholder="如：350"
+      value="{{goalScore}}"
+      bindinput="inputScore"
+      maxlength="3"
+    />
+  </view>
+
+  <view class="goal-section">
+    <text class="goal-section-title">截止日期</text>
+    <picker mode="date" value="{{goalDeadline}}" bindchange="pickDeadline">
+      <view class="goal-date-picker {{goalDeadline ? '' : 'goal-date-ph'}}">
+        <text>{{goalDeadline || '选择截止日期'}}</text>
+        <text class="goal-date-arrow">›</text>
+      </view>
+    </picker>
+  </view>
+
+  <view wx:if="{{showPreview}}" class="goal-preview-box">
+    <text class="goal-preview-label">目标预览</text>
+    <text class="goal-preview-text">{{previewText}}</text>
+  </view>
+
+  <view class="bottom-safe"></view>
+</scroll-view>
+
+<!-- 保存按钮 -->
+<view class="submit-bar" style="padding-bottom:calc({{safeBottom}}px + 24rpx);">
+  <view class="submit-btn" bindtap="saveGoal">保存目标</view>
+</view>

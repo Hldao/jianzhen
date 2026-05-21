@@ -1,0 +1,9 @@
+@import 'styles/icons.wxss';
+
+page {
+  --primary: #FF6B35;
+  background: #F5F5F5;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+  font-size: 28rpx;
+  color: #333333;
+}

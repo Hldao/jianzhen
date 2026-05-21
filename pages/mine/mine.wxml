@@ -1,0 +1,168 @@
+<!-- 导航栏 -->
+<view class="navbar" style="padding-top:{{statusBarHeight}}px;">
+  <view class="navbar-inner" style="height:{{navBarHeight}}px;">
+    <text class="nb-title">我的</text>
+    <view class="capsule-gap"></view>
+  </view>
+</view>
+
+<scroll-view
+  scroll-y enhanced show-scrollbar="{{false}}"
+  class="scroll-body"
+  style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);"
+>
+
+  <!-- ── 个人信息头部卡 ── -->
+  <view class="profile-header">
+    <view class="profile-top">
+      <image
+        wx:if="{{avatarUrl}}"
+        class="profile-avatar profile-avatar-img"
+        src="{{avatarUrl}}"
+        mode="aspectFill"
+      ></image>
+      <view wx:else class="profile-avatar">
+        <view class="lc lc-xl lc-white lc-crosshair"></view>
+      </view>
+      <view class="profile-meta">
+        <text class="profile-name">{{nickName}}</text>
+        <view class="profile-level">
+          <view class="lc lc-xs lc-yellow lc-crosshair" style="margin-right:8rpx;"></view>
+          <text>{{levelLabel}} · 已坚持 {{streakDays}} 天</text>
+        </view>
+        <view wx:if="{{clubName}}" class="profile-club-badge">
+          <view class="lc lc-xs lc-white lc-users" style="margin-right:6rpx;opacity:.7;"></view>
+          <text>{{clubName}}</text>
+        </view>
+      </view>
+      <view class="profile-edit-btn" bindtap="editProfile">
+        <text class="peb-txt">编辑</text>
+      </view>
+    </view>
+
+    <!-- 统计数字 -->
+    <view class="profile-stats">
+      <view class="ps-item">
+        <text class="ps-num">{{totalSessions}}</text>
+        <text class="ps-label">次训练</text>
+      </view>
+      <view class="ps-item">
+        <text class="ps-num">{{bestScore || '--'}}</text>
+        <text class="ps-label">最高环</text>
+      </view>
+      <!-- 参赛次数：等待赛事系统上线后启用
+      <view class="ps-item">
+        <text class="ps-num">{{eventCount}}</text>
+        <text class="ps-label">参赛次数</text>
+      </view>
+      -->
+    </view>
+  </view>
+
+  <!-- ── 成就徽章 ── -->
+  <view class="section-row">
+    <text class="section-label">成就徽章</text>
+    <view class="section-toggle" bindtap="toggleAchievements">
+      <text class="st-txt">{{showAllAchievements ? '收起' : '查看更多'}}</text>
+      <view class="lc lc-xs lc-gray lc-chevron-right {{showAllAchievements ? 'rot-270' : 'rot-90'}}"></view>
+    </view>
+  </view>
+  <view class="ach-grid">
+    <view
+      wx:for="{{achievements}}"
+      wx:key="id"
+      wx:if="{{showAllAchievements || index < 4}}"
+      class="ach-grid-item"
+      bindtap="openAchievementDetail"
+      data-idx="{{index}}"
+    >
+      <view class="ach-icon {{item.locked ? 'ach-icon-locked' : ''}}" style="background:{{item.bg}};">
+        <view class="lc lc-xl {{item.colorCls}} lc-{{item.icon}}"></view>
+      </view>
+      <text class="ach-name {{item.locked ? 'ach-name-locked' : ''}}">{{item.name}}</text>
+      <text wx:if="{{item.sub && !item.locked}}" class="ach-sub">{{item.sub}}</text>
+    </view>
+  </view>
+
+  <!-- 成就详情弹窗 -->
+  <view wx:if="{{activeAchievement}}" class="ach-detail-mask" bindtap="closeAchievementDetail">
+    <view class="ach-detail-card" catchtap="noop">
+      <view class="adc-close" bindtap="closeAchievementDetail">
+        <view class="lc lc-sm lc-gray lc-x"></view>
+      </view>
+      <view class="adc-icon-wrap {{activeAchievement.locked ? 'ach-icon-locked' : ''}}" style="background:{{activeAchievement.bg}};">
+        <view class="lc lc-2xl {{activeAchievement.colorCls}} lc-{{activeAchievement.icon}}"></view>
+      </view>
+      <text class="adc-name">{{activeAchievement.name}}</text>
+      <text class="adc-desc">{{activeAchievement.desc}}</text>
+      <view class="adc-divider"></view>
+      <view wx:if="{{!activeAchievement.locked}}" class="adc-status">
+        <view class="adc-status-dot adc-dot-green"></view>
+        <text class="adc-status-txt">已解锁 · {{activeAchievement.unlockedAtStr}}</text>
+      </view>
+      <view wx:else class="adc-status">
+        <view class="lc lc-sm lc-gray lc-lock" style="flex-shrink:0;"></view>
+        <text class="adc-status-txt adc-status-locked">未解锁</text>
+      </view>
+      <view wx:if="{{activeAchievement.repeatable && !activeAchievement.locked}}" class="adc-count-badge">
+        <text>已触发 {{activeAchievement.count}} 次</text>
+      </view>
+      <view wx:if="{{activeAchievement.progress}}" class="adc-progress">
+        <text class="adc-progress-txt">{{activeAchievement.progress}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ── 功能菜单 ── -->
+  <view class="menu-list">
+    <!-- 我的报名：等待赛事系统上线后启用
+    <view class="menu-item" bindtap="openMyEvents">
+      <view class="menu-icon" style="background:linear-gradient(135deg,#FF6B35,#FF8F5E);">
+        <view class="lc lc-md lc-white lc-medal"></view>
+      </view>
+      <text class="menu-label">我的报名</text>
+      <view wx:if="{{eventCount > 0}}" class="menu-badge">
+        <text>{{eventCount}}场</text>
+      </view>
+      <view class="lc lc-sm lc-gray lc-chevron-right"></view>
+    </view>
+    <view class="menu-divider"></view>
+    -->
+    <view class="menu-item" bindtap="editProfile">
+      <view class="menu-icon" style="background:linear-gradient(135deg,#6366F1,#818CF8);">
+        <view class="lc lc-md lc-white lc-user"></view>
+      </view>
+      <text class="menu-label">个人资料</text>
+      <view class="lc lc-sm lc-gray lc-chevron-right"></view>
+    </view>
+    <view class="menu-divider"></view>
+    <view class="menu-item" bindtap="openNotifications">
+      <view class="menu-icon" style="background:linear-gradient(135deg,#F59E0B,#FCD34D);">
+        <view class="lc lc-md lc-white lc-bell"></view>
+      </view>
+      <text class="menu-label">消息通知</text>
+      <view wx:if="{{unreadCount > 0}}" class="menu-badge menu-badge-red">
+        <text>{{unreadCount}}</text>
+      </view>
+      <view class="lc lc-sm lc-gray lc-chevron-right"></view>
+    </view>
+    <view class="menu-divider"></view>
+    <view class="menu-item" bindtap="shareApp">
+      <view class="menu-icon" style="background:linear-gradient(135deg,#10B981,#34D399);">
+        <view class="lc lc-md lc-white lc-share"></view>
+      </view>
+      <text class="menu-label">邀请好友</text>
+      <view class="lc lc-sm lc-gray lc-chevron-right"></view>
+    </view>
+    <view class="menu-divider"></view>
+    <view class="menu-item" bindtap="openAbout">
+      <view class="menu-icon" style="background:linear-gradient(135deg,#64748B,#94A3B8);">
+        <view class="lc lc-md lc-white lc-crosshair"></view>
+      </view>
+      <text class="menu-label">关于箭证</text>
+      <view class="lc lc-sm lc-gray lc-chevron-right"></view>
+    </view>
+  </view>
+
+  <view class="bottom-safe"></view>
+</scroll-view>

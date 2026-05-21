@@ -1,0 +1,140 @@
+<!-- 导航栏（Tab 页，无返回按钮）-->
+<view class="navbar" style="padding-top:{{statusBarHeight}}px;">
+  <view class="navbar-inner" style="height:{{navBarHeight}}px;">
+    <text class="nb-title">赛事</text>
+    <view class="capsule-gap"></view>
+  </view>
+</view>
+
+<scroll-view
+  scroll-y enhanced show-scrollbar="{{false}}"
+  class="scroll-body"
+  style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);"
+  refresher-enabled
+  refresher-triggered="{{refreshing}}"
+  bindrefresherrefresh="onRefresh"
+>
+
+  <!-- ── 搜索栏 ── -->
+  <view class="ev-search-bar">
+    <view class="lc lc-sm lc-gray lc-search ev-search-icon"></view>
+    <input
+      class="ev-search-input"
+      placeholder="搜索赛事名称"
+      placeholder-style="color:#94A3B8;"
+      value="{{searchKeyword}}"
+      bindinput="onSearch"
+    />
+    <view wx:if="{{searchKeyword}}" class="ev-search-clear" bindtap="clearSearch">
+      <view class="lc lc-xs lc-gray lc-x"></view>
+    </view>
+  </view>
+
+  <!-- ── 加载中骨架 ── -->
+  <block wx:if="{{loading}}">
+    <view class="featured-card sk-featured">
+      <view class="sk-line sk-line-sm"></view>
+      <view class="sk-line sk-line-lg"></view>
+      <view class="sk-line sk-line-md"></view>
+    </view>
+    <view class="sort-bar">
+      <view class="sort-chip sk-chip"></view>
+      <view class="sort-chip sk-chip"></view>
+    </view>
+    <view class="comp-list-card">
+      <view wx:for="{{[1,2,3]}}" wx:key="*this" class="comp-item">
+        <view class="sk-date-block"></view>
+        <view class="sk-info">
+          <view class="sk-line sk-line-md"></view>
+          <view class="sk-line sk-line-sm"></view>
+        </view>
+        <view class="sk-status-block"></view>
+      </view>
+    </view>
+  </block>
+
+  <!-- ── 有数据 ── -->
+  <block wx:elif="{{featured || competitions.length}}">
+
+    <!-- 精选赛事卡 -->
+    <view wx:if="{{featured}}" class="featured-card" bindtap="openFeaturedDetail">
+      <view class="fc-header">
+        <text class="fc-badge">⭐ 精选赛事</text>
+        <text class="fc-status-{{featured.statusCls}}">{{featured.statusLabel}}</text>
+      </view>
+      <text class="fc-name">{{featured.name}}</text>
+      <view class="fc-meta">
+        <view class="fc-meta-row">
+          <text class="fc-meta-icon">📅</text>
+          <text class="fc-meta-txt">{{featured.date}}{{featured.endDate ? ' - ' + featured.endDate : ''}}</text>
+        </view>
+        <view class="fc-meta-row">
+          <text class="fc-meta-icon">📍</text>
+          <text class="fc-meta-txt">{{featured.address}}</text>
+        </view>
+      </view>
+      <view class="fc-footer">
+        <view>
+          <text class="fc-count-num">{{featured.count}}</text>
+          <text class="fc-count"> 人已报名</text>
+        </view>
+        <view class="fc-btn">查看详情 ›</view>
+      </view>
+    </view>
+
+    <!-- 排序切换 -->
+    <view class="sort-bar">
+      <view
+        class="sort-chip {{sortBy==='date'?'sort-chip-active':''}}"
+        bindtap="setSortBy" data-sort="date"
+      >
+        <text class="sort-chip-icon">📅</text>
+        <text>日期最近</text>
+      </view>
+      <view
+        class="sort-chip {{sortBy==='count'?'sort-chip-active':''}}"
+        bindtap="setSortBy" data-sort="count"
+      >
+        <text class="sort-chip-icon">👥</text>
+        <text>人气最高</text>
+      </view>
+    </view>
+
+    <!-- 赛事列表 -->
+    <view wx:if="{{competitions.length}}" class="comp-list-card">
+      <view
+        wx:for="{{competitions}}" wx:key="id"
+        class="comp-item {{index < competitions.length - 1 ? '' : 'comp-item-last'}}"
+        bindtap="openCompDetail" data-id="{{item.id}}"
+      >
+        <view class="comp-date">
+          <text class="comp-date-day">{{item.day}}</text>
+          <text class="comp-date-month">{{item.month}}</text>
+        </view>
+        <view class="comp-info">
+          <text class="comp-name">{{item.name}}</text>
+          <text class="comp-meta">{{item.address}}{{item.format ? ' · ' + item.format : ''}}</text>
+          <text class="comp-meta">{{item.countLabel}}</text>
+        </view>
+        <view class="comp-right">
+          <text wx:if="{{item.myStatus !== 'none'}}" class="comp-myreg">已报名</text>
+          <text class="status-badge status-{{item.statusCls}}">{{item.statusLabel}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 无列表但有精选时的提示 -->
+    <view wx:if="{{!competitions.length}}" class="empty-sub">
+      <text class="empty-sub-txt">暂无更多赛事</text>
+    </view>
+  </block>
+
+  <!-- ── 空状态 ── -->
+  <view wx:else class="empty-state">
+    <text class="es-icon">🏹</text>
+    <text class="es-title">暂无赛事</text>
+    <text class="es-desc">下拉刷新试试\n赛事信息将实时更新</text>
+  </view>
+
+  <view class="bottom-safe"></view>
+</scroll-view>

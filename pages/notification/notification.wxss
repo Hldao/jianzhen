@@ -1,0 +1,108 @@
+page {
+  background: #EEF1F8;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+  --primary: #FF6B35;
+  --text: #1A1A2E;
+  --text-mid: #64748B;
+  --text-light: #94A3B8;
+  --border: #E8ECF2;
+  --white: #fff;
+  --shadow: 0 4rpx 20rpx rgba(0,0,0,.07);
+  --radius: 28rpx;
+}
+
+/* ── 导航栏 ── */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(255,255,255,.95);
+  border-bottom: 1rpx solid var(--border);
+}
+.navbar-inner {
+  display: flex; align-items: center;
+  padding: 0 24rpx; position: relative;
+}
+.nb-back {
+  width: 64rpx; height: 64rpx;
+  display: flex; align-items: center; justify-content: center;
+  margin-right: 8rpx;
+}
+.nb-back-icon { font-size: 48rpx; color: var(--text); line-height: 1; font-weight: 300; }
+.nb-title { flex: 1; font-size: 32rpx; font-weight: 700; color: var(--text); text-align: center; }
+.nb-right { width: 120rpx; text-align: right; }
+.nb-read-all { font-size: 24rpx; color: var(--primary); font-weight: 600; }
+
+/* ── Tab 栏 ── */
+.notif-tabs {
+  position: fixed; left: 0; right: 0; z-index: 99;
+  background: var(--white);
+  display: flex; border-bottom: 1rpx solid var(--border);
+  padding: 0 24rpx;
+}
+.notif-tab {
+  flex: 1; text-align: center;
+  font-size: 26rpx; color: var(--text-light);
+  padding: 20rpx 0 18rpx;
+  position: relative;
+}
+.nt-active {
+  color: var(--primary); font-weight: 700;
+}
+.nt-active::after {
+  content: ''; position: absolute; bottom: 0; left: 20%; right: 20%;
+  height: 4rpx; background: var(--primary); border-radius: 4rpx;
+}
+
+/* ── 滚动体 ── */
+.scroll-body {
+  position: fixed; left: 0; right: 0; bottom: 0;
+}
+
+/* ── 通知列表 ── */
+.notif-item {
+  display: flex; align-items: center; gap: 24rpx;
+  padding: 28rpx 28rpx;
+  background: var(--white);
+  border-bottom: 1rpx solid var(--border);
+  position: relative;
+}
+.notif-unread { background: #FFFBF8; }
+.notif-icon-wrap {
+  width: 80rpx; height: 80rpx; border-radius: 22rpx; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.notif-icon-event { background: linear-gradient(135deg,#FEF3C7,#FDE68A); }
+.notif-icon-club  { background: linear-gradient(135deg,#D1FAE5,#A7F3D0); }
+.notif-icon-system { background: linear-gradient(135deg,#DBEAFE,#BFDBFE); }
+.ni-emoji { font-size: 36rpx; line-height: 1; }
+
+.notif-content { flex: 1; min-width: 0; }
+.notif-title { display: block; font-size: 28rpx; font-weight: 600; color: var(--text); margin-bottom: 6rpx; }
+.notif-desc  { display: block; font-size: 24rpx; color: var(--text-mid); line-height: 1.5; margin-bottom: 8rpx;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.notif-time  { display: block; font-size: 22rpx; color: var(--text-light); }
+
+.notif-dot {
+  position: absolute; top: 28rpx; right: 28rpx;
+  width: 16rpx; height: 16rpx; border-radius: 50%;
+  background: #EF4444;
+}
+
+/* ── 骨架屏 ── */
+.skeleton-list { background: var(--white); }
+.sk-icon  { width: 80rpx; height: 80rpx; border-radius: 22rpx; background: #E8ECF2; flex-shrink: 0; }
+.sk-lines { flex: 1; }
+.sk-line  { height: 24rpx; border-radius: 6rpx; background: #E8ECF2; margin-bottom: 12rpx; }
+.sk-line-a { width: 55%; }
+.sk-line-b { width: 80%; }
+
+/* ── 空状态 ── */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 120rpx 48rpx; gap: 16rpx;
+}
+.es-icon  { font-size: 80rpx; line-height: 1; }
+.es-title { font-size: 30rpx; font-weight: 700; color: var(--text); }
+.es-desc  { font-size: 24rpx; color: var(--text-light); text-align: center; line-height: 1.7; }
+
+/* ── 底部安全 ── */
+.bottom-safe { height: calc(40rpx + env(safe-area-inset-bottom)); }

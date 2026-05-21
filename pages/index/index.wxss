@@ -1,0 +1,415 @@
+page {
+  background: #EEF1F8;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+  --primary: #FF6B35;
+  --text: #1A1A2E;
+  --text-mid: #64748B;
+  --text-light: #94A3B8;
+  --border: #E8ECF2;
+  --white: #fff;
+  --shadow: 0 4rpx 20rpx rgba(0,0,0,.07);
+  --radius: 28rpx;
+}
+
+/* ── 导航栏 ─────────────────────────────────────── */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(255,255,255,.95);
+  border-bottom: 1rpx solid var(--border);
+}
+.navbar-inner {
+  display: flex; align-items: center;
+  justify-content: space-between; padding: 0 24rpx;
+  position: relative;
+}
+.nb-left { display: flex; align-items: center; gap: 12rpx; flex: 1; }
+.nb-title {
+  position: absolute; left: 0; right: 0; pointer-events: none;
+  display: flex; align-items: center; justify-content: center; gap: 10rpx;
+}
+.nb-title-txt {
+  font-size: 34rpx; font-weight: 800; color: var(--text); letter-spacing: -0.5rpx;
+}
+/* 导航栏品牌图标 */
+.nb-icon-bow {
+  width: 30rpx; height: 30rpx;
+  background-color: var(--primary);
+}
+.capsule-gap { width: 190rpx; flex-shrink: 0; }
+
+/* ── 页面主体 ───────────────────────────────────── */
+.page-content {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  padding: 20rpx 24rpx 0;
+  box-sizing: border-box;
+}
+
+/* ── 训练概览卡（含连续天数） ───────────────────── */
+.hero-card {
+  background: linear-gradient(145deg, #0F1F5C 0%, #1E3A8A 50%, #2563EB 100%);
+  border-radius: var(--radius);
+  padding: 36rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 16rpx 48rpx rgba(15,31,92,.35);
+  position: relative; overflow: hidden;
+}
+.hero-card::before {
+  content: ''; position: absolute; right: -80rpx; top: -80rpx;
+  width: 320rpx; height: 320rpx; border-radius: 50%;
+  background: rgba(255,255,255,.04);
+}
+
+/* Streak row */
+.hc-streak-row {
+  display: flex; align-items: center; margin-bottom: 32rpx;
+}
+/* 连续天数状态图标 — mask 由全局 .lc-flame/.lc-snowflake/.lc-circle-x 提供 */
+.hc-si {
+  width: 56rpx; height: 56rpx; flex-shrink: 0; margin-right: 24rpx;
+}
+.hc-si-active  { background-color: #FF8F5E; }
+.hc-si-frozen  { background-color: rgba(160,210,255,.85); }
+.hc-si-broken  { background-color: rgba(255,255,255,.45); }
+.hc-streak-info { display: flex; flex-direction: column; }
+.hc-big-row { display: flex; align-items: flex-end; }
+.hc-big-num {
+  font-size: 88rpx; font-weight: 900; color: #fff;
+  line-height: 1; letter-spacing: -4rpx;
+}
+.hc-big-suffix {
+  display: flex; flex-direction: column; justify-content: flex-end;
+  margin-left: 10rpx; padding-bottom: 8rpx; gap: 4rpx;
+}
+.hc-big-unit {
+  font-size: 32rpx; font-weight: 700;
+  color: rgba(255,255,255,.65); line-height: 1;
+}
+.hc-big-tag {
+  font-size: 18rpx; font-weight: 700; letter-spacing: 2rpx;
+  color: rgba(255,255,255,.45); line-height: 1;
+}
+.hc-streak-sub {
+  font-size: 22rpx; color: rgba(255,255,255,.45); margin-top: 8rpx; letter-spacing: .5rpx;
+}
+.hero-frozen .hc-streak-sub { color: rgba(180,210,255,.7); }
+
+/* 7-day pills */
+.hc-days { display: flex; margin-bottom: 28rpx; }
+.hc-day {
+  flex: 1; height: 6rpx; border-radius: 3rpx;
+  background: rgba(255,255,255,.15); margin-right: 8rpx;
+}
+.hc-day:last-child { margin-right: 0; }
+.hc-day-on { background: rgba(255,255,255,.8); }
+.hero-frozen .hc-day-on { background: rgba(160,200,255,.8); }
+.hero-broken .hc-day-on { background: rgba(255,255,255,.35); }
+
+/* Bottom stats strip */
+.hc-bstats {
+  display: flex; align-items: center;
+  background: rgba(255,255,255,.08); border-radius: 16rpx;
+  padding: 16rpx 22rpx;
+}
+.hc-bst  { font-size: 22rpx; color: rgba(255,255,255,.55); }
+.hc-bsep { font-size: 22rpx; color: rgba(255,255,255,.2); margin: 0 14rpx; }
+.hc-bst-up { color: #34D399; font-weight: 600; }
+.hc-bst-dn { color: #FDA4AF; font-weight: 600; }
+
+/* ── 励志名言遮罩 ────────────────────────────────── */
+@keyframes hcQuoteFade {
+  0%   { opacity: 0 }
+  8%   { opacity: 1 }
+  78%  { opacity: 1 }
+  100% { opacity: 0 }
+}
+.hc-quote {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: inherit;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 32rpx;
+  padding: 48rpx 56rpx;
+  background: linear-gradient(145deg, #060d24 0%, #0c1a4e 45%, #1640b8 100%);
+  z-index: 10;
+  pointer-events: none;
+  animation: hcQuoteFade 4s ease forwards;
+}
+.hq-line {
+  width: 72rpx; height: 3rpx; border-radius: 2rpx;
+  background: linear-gradient(90deg, transparent, rgba(255,215,0,.65), transparent);
+}
+.hq-text {
+  font-size: 40rpx; font-weight: 600; color: #fff;
+  font-family: 'STKaiti', 'KaiTi', 'AR PL UKai CN', Georgia, serif;
+  text-align: center; line-height: 1.85; letter-spacing: 4rpx;
+  white-space: pre-wrap;
+}
+.hq-author {
+  font-size: 24rpx; color: rgba(255,255,255,.42);
+  font-family: 'STKaiti', 'KaiTi', Georgia, serif;
+  letter-spacing: 2rpx;
+}
+
+/* ── 开始训练按钮 ────────────────────────────────── */
+.btn-start {
+  width: 100%; height: 100rpx;
+  border-radius: 24rpx;
+  background: linear-gradient(135deg, #FF6B35, #FF8F5E);
+  color: #fff; font-size: 32rpx; font-weight: 700;
+  border: none; padding: 0;
+  box-shadow: 0 10rpx 32rpx rgba(255,107,53,.38);
+  display: flex; align-items: center; justify-content: center;
+  gap: 12rpx; letter-spacing: 2rpx; margin-bottom: 20rpx;
+}
+.btn-start::after { border: none; }
+.btn-start-hover { opacity: .88; transform: scale(.985); }
+/* 按钮内图标 */
+.btn-bow-icon {
+  width: 34rpx; height: 34rpx;
+  background-color: #fff;
+}
+
+/* ── 快捷入口 ───────────────────────────────────── */
+.quick-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16rpx; margin-bottom: 20rpx;
+}
+.quick-card {
+  background: var(--white); border-radius: var(--radius);
+  padding: 28rpx 24rpx; box-shadow: var(--shadow);
+  display: flex; flex-direction: column; align-items: center; gap: 8rpx;
+}
+.qc-icon {
+  width: 72rpx; height: 72rpx; border-radius: 18rpx;
+  display: flex; align-items: center; justify-content: center; margin-bottom: 6rpx;
+}
+/* 快捷卡 SVG 图标 — 尺寸由全局 .lc-md 控制 */
+.qc-svg { width: 38rpx; height: 38rpx; }
+.qc-title { font-size: 28rpx; font-weight: 700; color: var(--text); }
+.qc-sub   { font-size: 22rpx; color: var(--text-light); }
+
+/* ── 通用卡片 ───────────────────────────────────── */
+.section-card {
+  background: var(--white); border-radius: var(--radius);
+  padding: 28rpx; margin-bottom: 20rpx; box-shadow: var(--shadow);
+}
+.section-hd {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 20rpx;
+}
+.section-title { font-size: 30rpx; font-weight: 700; color: var(--text); }
+.section-more  { font-size: 24rpx; color: var(--text-light); }
+
+/* ── 箭友动态 ───────────────────────────────────── */
+.feed-item {
+  display: flex; align-items: flex-start; gap: 20rpx;
+  padding: 20rpx 0; border-bottom: 1rpx solid var(--border);
+}
+.feed-item:last-of-type { border-bottom: none; padding-bottom: 0; }
+.feed-avatar {
+  width: 76rpx; height: 76rpx; border-radius: 18rpx; flex-shrink: 0;
+  background: linear-gradient(135deg, #FF6B35, #FF8F5E);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6rpx 16rpx rgba(255,107,53,.25);
+  overflow: hidden;
+}
+.feed-avatar-img { background: #E8ECF2; box-shadow: 0 6rpx 16rpx rgba(0,0,0,.12); }
+.feed-emoji  { font-size: 36rpx; }
+.feed-body   { flex: 1; display: flex; flex-direction: column; gap: 6rpx; }
+.feed-top    { display: flex; justify-content: space-between; align-items: center; }
+.feed-name-row { display: flex; align-items: center; gap: 10rpx; }
+.feed-name   { font-size: 28rpx; font-weight: 600; color: var(--text); }
+.feed-time   { font-size: 22rpx; color: var(--text-light); flex-shrink: 0; }
+
+/* 来源标签（微信好友 / 俱乐部）*/
+.feed-source {
+  display: inline-flex; align-items: center;
+  font-size: 20rpx; font-weight: 600;
+  border-radius: 8rpx; padding: 3rpx 12rpx;
+}
+.feed-source-wx   { color: #07C160; background: rgba(7,193,96,.1); }
+.feed-source-club { color: #2563EB; background: rgba(37,99,235,.08); }
+
+/* 成绩描述行 */
+.feed-desc-row { display: flex; align-items: baseline; flex-wrap: wrap; }
+.feed-desc   { font-size: 26rpx; color: var(--text-mid); line-height: 1.55; }
+.feed-desc-em { font-size: 26rpx; font-weight: 800; color: var(--text); line-height: 1.55; }
+
+.feed-tag {
+  display: inline-block; font-size: 22rpx; font-weight: 600; color: var(--primary);
+  background: rgba(255,107,53,.08); border-radius: 8rpx; padding: 4rpx 14rpx;
+  align-self: flex-start;
+}
+
+
+/* ── 底部安全距离 ───────────────────────────────── */
+.bottom-safe { height: calc(100rpx + env(safe-area-inset-bottom) + 32rpx); }
+
+/* ── 箭友动态：骨架屏 ───────────────────────────── */
+.feed-skeleton { padding: 4rpx 0; }
+.feed-skeleton-row {
+  display: flex; align-items: center; gap: 20rpx; padding: 20rpx 0;
+  border-top: 1rpx solid var(--border);
+}
+.feed-skeleton-row:first-child { border-top: none; }
+.fsk-avatar {
+  width: 76rpx; height: 76rpx; border-radius: 18rpx; flex-shrink: 0;
+  background: linear-gradient(90deg, #EEF1F8 25%, #E2E6EF 50%, #EEF1F8 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+.fsk-lines { flex: 1; display: flex; flex-direction: column; gap: 12rpx; }
+.fsk-line {
+  height: 24rpx; border-radius: 6rpx;
+  background: linear-gradient(90deg, #EEF1F8 25%, #E2E6EF 50%, #EEF1F8 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+.fsk-line-a { width: 60%; }
+.fsk-line-b { width: 85%; }
+@keyframes shimmer { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
+
+/* ── 箭友动态：空状态 ───────────────────────────── */
+.feed-empty {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 48rpx 24rpx 32rpx; gap: 16rpx;
+}
+/* 空状态靶心图标 — 颜色由全局 .lci-target 提供 */
+.fe-icon-target { width: 72rpx; height: 72rpx; }
+.fe-title { font-size: 30rpx; font-weight: 700; color: var(--text); }
+.fe-desc {
+  font-size: 24rpx; color: var(--text-light); text-align: center;
+  line-height: 1.7; white-space: pre-wrap;
+}
+.fe-actions { display: flex; gap: 16rpx; margin-top: 8rpx; }
+.fe-btn-primary,
+.fe-btn-secondary {
+  font-size: 26rpx; font-weight: 700;
+  border-radius: 48rpx; padding: 0 36rpx;
+  height: 72rpx; line-height: 72rpx;
+  border: none; margin: 0;
+}
+.fe-btn-primary::after,
+.fe-btn-secondary::after { border: none; }
+.fe-btn-primary {
+  background: var(--primary); color: #fff;
+  box-shadow: 0 6rpx 20rpx rgba(255,107,53,.32);
+}
+.fe-btn-secondary {
+  background: transparent; color: var(--primary);
+  box-shadow: inset 0 0 0 2rpx var(--primary);
+  font-weight: 600;
+}
+
+/* ── 箭友动态：真实数据 ─────────────────────────── */
+.feed-avatar-txt {
+  width: 76rpx; height: 76rpx; border-radius: 18rpx; flex-shrink: 0;
+  background: linear-gradient(135deg, #0F1F5C, #2563EB);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32rpx; font-weight: 700; color: #fff;
+}
+.feed-note {
+  display: block; font-size: 22rpx; color: var(--text-light);
+  margin-top: 6rpx; font-style: italic;
+}
+.feed-item-mine .feed-avatar-txt {
+  background: linear-gradient(135deg, #FF6B35, #FF8F5E);
+}
+.feed-item-mine .feed-name { color: var(--primary); }
+
+/* 点赞按钮 */
+.feed-actions { display: flex; align-items: center; margin-top: 12rpx; }
+.feed-like-btn {
+  display: flex; align-items: center; gap: 8rpx;
+  font-size: 22rpx; color: var(--text-light);
+}
+.feed-like-btn .lc { width: 28rpx; height: 28rpx; }
+.feed-like-btn-liked { color: #EF4444; }
+
+/* 邀请好友卡 */
+.feed-invite {
+  display: flex; align-items: center; gap: 20rpx;
+  padding: 24rpx 0;
+}
+.fi-icon {
+  width: 72rpx; height: 72rpx; border-radius: 20rpx;
+  background: #F0FDF4;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.fi-icon .lc { width: 36rpx; height: 36rpx; }
+.fi-txt { flex: 1; font-size: 24rpx; color: var(--text-mid); line-height: 1.5; }
+.fi-btn {
+  font-size: 22rpx; font-weight: 700; color: #07C160;
+  background: rgba(7,193,96,.1); border-radius: 14rpx;
+  padding: 12rpx 24rpx; flex-shrink: 0;
+}
+
+/* ── 训练目标面板（在 hero-card 内） ────────────── */
+.sk-goal-panel {
+  background: rgba(20,8,0,.38);
+  border: 1rpx solid rgba(255,150,50,.22);
+  border-radius: 24rpx; padding: 26rpx 28rpx; margin-top: 28rpx;
+  box-shadow: inset 0 2rpx 0 rgba(255,180,80,.1);
+}
+.sk-goal-hd {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 22rpx;
+}
+.sk-goal-label {
+  font-size: 24rpx; color: #FFB347; font-weight: 700; letter-spacing: .5rpx;
+}
+.sk-goal-right { display: flex; align-items: center; gap: 12rpx; }
+.sk-goal-tag {
+  font-size: 22rpx; color: rgba(255,220,160,.9);
+  background: rgba(255,150,50,.18); border-radius: 14rpx; padding: 4rpx 18rpx;
+  font-weight: 600;
+}
+.sk-goal-edit {
+  font-size: 22rpx; color: #FFB347;
+  background: rgba(255,140,50,.15); border: 1rpx solid rgba(255,150,50,.35);
+  border-radius: 16rpx; padding: 6rpx 22rpx; font-weight: 600;
+}
+.sk-goal-inline {
+  display: flex; align-items: center; gap: 14rpx; margin-bottom: 16rpx;
+}
+.sk-goal-score {
+  font-size: 34rpx; font-weight: 800; color: #FFB347; letter-spacing: -.5rpx;
+  white-space: nowrap;
+}
+.sk-goal-of {
+  font-size: 22rpx; color: rgba(255,255,255,.32); font-weight: 500;
+  white-space: nowrap;
+}
+.sk-goal-bar {
+  flex: 1; height: 10rpx; background: rgba(255,255,255,.1);
+  border-radius: 6rpx; overflow: hidden;
+}
+.sk-goal-fill {
+  height: 100%; border-radius: 6rpx;
+  background: linear-gradient(90deg, #FF6B35, #FFB347);
+  transition: width .6s ease;
+}
+.sk-goal-fill-done { background: linear-gradient(90deg, #34D399, #6EE7B7); }
+.sk-goal-pct {
+  font-size: 24rpx; font-weight: 700; color: rgba(255,180,80,.8); white-space: nowrap;
+}
+.sk-goal-foot {
+  display: flex; justify-content: space-between;
+  font-size: 22rpx; color: rgba(255,255,255,.32);
+}
+.sk-goal-foot text:first-child { color: rgba(255,190,100,.85); font-weight: 600; }
+
+/* 未设目标时的虚线入口 */
+.sk-goal-empty {
+  display: flex; align-items: center; gap: 16rpx;
+  background: rgba(20,8,0,.25);
+  border: 2rpx dashed rgba(255,150,50,.25);
+  border-radius: 20rpx; padding: 22rpx 26rpx; margin-top: 28rpx;
+}
+.sk-goal-empty-txt {
+  flex: 1; font-size: 24rpx; color: rgba(255,255,255,.38); letter-spacing: .3rpx;
+}
+.sk-goal-empty-btn {
+  font-size: 24rpx; color: #FFB347;
+  background: rgba(255,140,50,.15); border: 1rpx solid rgba(255,150,50,.3);
+  border-radius: 16rpx; padding: 8rpx 24rpx; font-weight: 600; white-space: nowrap;
+}

@@ -1,0 +1,131 @@
+page {
+  background: #EEF1F8;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+  --primary: #FF6B35;
+  --text: #1A1A2E;
+  --text-mid: #64748B;
+  --text-light: #94A3B8;
+  --border: #E8ECF2;
+  --shadow: 0 4rpx 20rpx rgba(0,0,0,.07);
+  --radius: 24rpx;
+}
+
+/* ── 导航栏 ── */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(255,255,255,.95); backdrop-filter: blur(10px);
+  border-bottom: 1rpx solid var(--border);
+}
+.navbar-inner {
+  display: flex; align-items: center;
+  justify-content: space-between; padding: 0 24rpx;
+}
+.nb-back {
+  width: 64rpx; height: 64rpx;
+  display: flex; align-items: center; justify-content: flex-start;
+}
+.nb-back .lc { width: 40rpx; height: 40rpx; }
+.nb-title { font-size: 32rpx; font-weight: 700; color: var(--text); }
+
+/* ── 筛选 Tab ── */
+.filter-bar {
+  position: fixed; left: 0; right: 0; z-index: 90;
+  display: flex; background: #fff;
+  border-bottom: 1rpx solid var(--border);
+  padding: 0 8rpx;
+}
+.filter-tab {
+  flex: 1; text-align: center; padding: 22rpx 0;
+  font-size: 26rpx; font-weight: 600; color: var(--text-light);
+  border-bottom: 4rpx solid transparent;
+  display: flex; align-items: center; justify-content: center; gap: 8rpx;
+}
+.filter-tab-active { color: var(--primary); border-bottom-color: var(--primary); }
+.tab-badge {
+  background: #EF4444; color: #fff;
+  font-size: 18rpx; font-weight: 700;
+  min-width: 32rpx; height: 32rpx; border-radius: 16rpx;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 8rpx;
+}
+
+/* ── 滚动体 ── */
+.scroll-body {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  padding: 20rpx 24rpx 0;
+  box-sizing: border-box;
+}
+
+/* ── 骨架屏 ── */
+.skeleton-list { display: flex; flex-direction: column; gap: 16rpx; }
+.rm-item-sk { opacity: .5; pointer-events: none; }
+.rm-sk-top { display: flex; align-items: center; gap: 20rpx; }
+.rm-sk-avatar {
+  width: 72rpx; height: 72rpx; border-radius: 18rpx;
+  background: #E8ECF2; flex-shrink: 0;
+}
+.rm-sk-lines { flex: 1; display: flex; flex-direction: column; gap: 12rpx; }
+.rm-sk-line {
+  height: 24rpx; border-radius: 6rpx; background: #E8ECF2;
+}
+.rm-sk-line-a { width: 45%; }
+.rm-sk-line-b { width: 70%; }
+
+/* ── 空状态 ── */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 100rpx 48rpx; gap: 20rpx;
+}
+.empty-state .lc { width: 80rpx; height: 80rpx; }
+.empty-title { font-size: 28rpx; color: var(--text-light); }
+
+/* ── 报名列表 ── */
+.rm-list { display: flex; flex-direction: column; gap: 16rpx; padding-bottom: 16rpx; }
+
+.rm-item {
+  background: #fff; border-radius: var(--radius);
+  padding: 28rpx 28rpx 24rpx;
+  box-shadow: var(--shadow);
+}
+
+/* 顶部行 */
+.rm-top { display: flex; align-items: center; gap: 20rpx; margin-bottom: 16rpx; }
+.rm-avatar {
+  width: 72rpx; height: 72rpx; border-radius: 20rpx; flex-shrink: 0;
+  background: linear-gradient(135deg, #FF6B35, #FF8F5E);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28rpx; font-weight: 700; color: #fff;
+}
+.rm-info { flex: 1; display: flex; flex-direction: column; gap: 6rpx; }
+.rm-name { font-size: 28rpx; font-weight: 700; color: var(--text); }
+.rm-cat  { font-size: 22rpx; color: var(--text-light); }
+
+/* 状态徽章 */
+.rm-badge {
+  font-size: 22rpx; font-weight: 700; padding: 6rpx 18rpx; border-radius: 12rpx;
+}
+.rm-badge-pending   { background: rgba(245,158,11,.1); color: #F59E0B; }
+.rm-badge-confirmed { background: rgba(16,185,129,.1);  color: #10B981; }
+.rm-badge-cancelled { background: rgba(148,163,184,.1); color: #94A3B8; }
+
+/* 元信息行 */
+.rm-meta-row {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 20rpx;
+}
+.rm-time { font-size: 22rpx; color: var(--text-light); }
+.rm-fee  { font-size: 24rpx; font-weight: 700; color: var(--text); }
+
+/* 操作按钮 */
+.rm-actions { display: flex; gap: 16rpx; }
+.rm-btn {
+  flex: 1; height: 68rpx; border-radius: 16rpx;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24rpx; font-weight: 700;
+}
+.rm-btn-confirm  { background: rgba(16,185,129,.12); color: #10B981; }
+.rm-btn-reject   { background: rgba(148,163,184,.1);  color: #64748B; }
+.rm-btn-call     { background: rgba(37,99,235,.1);    color: #2563EB; }
+
+/* ── 底部安全 ── */
+.bottom-safe { height: calc(40rpx + env(safe-area-inset-bottom)); }

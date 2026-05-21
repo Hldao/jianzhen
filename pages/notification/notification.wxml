@@ -1,0 +1,68 @@
+<!-- 导航栏 -->
+<view class="navbar" style="padding-top:{{statusBarHeight}}px;">
+  <view class="navbar-inner" style="height:{{navBarHeight}}px;">
+    <view class="nb-back" bindtap="goBack"><text class="nb-back-icon">‹</text></view>
+    <text class="nb-title">消息通知</text>
+    <view class="nb-right">
+      <text wx:if="{{notifications.length}}" class="nb-read-all" bindtap="markAllRead">全部已读</text>
+    </view>
+  </view>
+</view>
+
+<!-- Tab 栏 -->
+<view class="notif-tabs" style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);">
+  <view class="notif-tab {{activeTab==='all'   ?'nt-active':''}}" bindtap="switchTab" data-tab="all">全部</view>
+  <view class="notif-tab {{activeTab==='event' ?'nt-active':''}}" bindtap="switchTab" data-tab="event">赛事</view>
+  <view class="notif-tab {{activeTab==='club'  ?'nt-active':''}}" bindtap="switchTab" data-tab="club">俱乐部</view>
+  <view class="notif-tab {{activeTab==='system'?'nt-active':''}}" bindtap="switchTab" data-tab="system">系统</view>
+</view>
+
+<scroll-view
+  scroll-y enhanced show-scrollbar="{{false}}"
+  class="scroll-body"
+  style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px + 88rpx);"
+  bindscrolltolower="loadMore"
+>
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="skeleton-list">
+    <view wx:for="{{[1,2,3]}}" wx:key="*this" class="notif-item">
+      <view class="sk-icon"></view>
+      <view class="sk-lines">
+        <view class="sk-line sk-line-a"></view>
+        <view class="sk-line sk-line-b"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:elif="{{filtered.length === 0}}" class="empty-state">
+    <text class="es-icon">🔔</text>
+    <text class="es-title">暂无通知</text>
+    <text class="es-desc">赛事报名、系统消息\n都会在这里通知你</text>
+  </view>
+
+  <!-- 通知列表 -->
+  <block wx:else>
+    <view
+      wx:for="{{filtered}}"
+      wx:key="_id"
+      class="notif-item {{item.read ? '' : 'notif-unread'}}"
+      bindtap="tapNotif"
+      data-id="{{item._id}}"
+      data-index="{{index}}"
+    >
+      <view class="notif-icon-wrap notif-icon-{{item.type}}">
+        <text class="ni-emoji">{{item.type === 'event' ? '🏆' : item.type === 'club' ? '🏹' : 'ℹ️'}}</text>
+      </view>
+      <view class="notif-content">
+        <text class="notif-title">{{item.title}}</text>
+        <text class="notif-desc">{{item.desc}}</text>
+        <text class="notif-time">{{item.timeLabel}}</text>
+      </view>
+      <view wx:if="{{!item.read}}" class="notif-dot"></view>
+    </view>
+  </block>
+
+  <view class="bottom-safe"></view>
+</scroll-view>
