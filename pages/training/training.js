@@ -510,7 +510,7 @@ Page({
       const { elimOpponentMean, elimOpponentStd, elimMyPts, elimOppPts } = this.data
       const lastResult = newResults[newResults.length - 1]
       const myScore  = lastResult.total
-      const oppScore = randNormal(elimOpponentMean, elimOpponentStd)
+      const oppScore = Math.round(Math.max(0, Math.min(arrowsPerEnd * 10, randNormal(elimOpponentMean, elimOpponentStd))))
 
       let myPtsGain = 0, oppPtsGain = 0
       if (myScore > oppScore)       { myPtsGain = 2 }
@@ -527,7 +527,7 @@ Page({
       if (matchOver) {
         if (newMyPts > newOppPts) matchWon = true
         else if (newMyPts < newOppPts) matchWon = false
-        else matchWon = randNormal(elimOpponentMean, elimOpponentStd) >= randNormal(elimOpponentMean, elimOpponentStd)
+        else matchWon = Math.random() < 0.5  // 平局加射，50/50
       }
 
       // 在 endResults 中记录对手成绩，step 5 复盘时显示
