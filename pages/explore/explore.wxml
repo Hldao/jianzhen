@@ -188,6 +188,7 @@
         maxlength="20"
         value="{{newClubCity}}"
         bindinput="inputNewClubCity"
+        adjust-position="{{false}}"
       />
     </view>
 

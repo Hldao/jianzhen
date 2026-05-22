@@ -64,6 +64,8 @@ miniprogram-1/
 | 页面 | 路径 | 功能 |
 |------|------|------|
 | 发现箭友 | `pages/explore/explore` | Tab 切换：箭友列表 / 俱乐部列表（搜索、加入/退出、创建） |
+| 用户主页 | `pages/userprofile/userprofile` | 查看他人公开主页（头像/等级/训练次数/最近动态） |
+| 俱乐部详情 | `pages/clubdetail/clubdetail` | 俱乐部信息 + 成员列表，加入/退出功能 |
 | 消息通知 | `pages/notification/notification` | 系统通知列表，支持标记已读 |
 
 ### 赛事系统（待上线，代码已写，UI 已注释）
@@ -111,15 +113,25 @@ await api.social.createClub({ name, city })
 
 | action | 说明 |
 |--------|------|
-| `getPublicFeed` | 所有用户训练动态流（含用户头像/昵称） |
+| `getPublicFeed` | 所有用户训练动态流（含用户头像/昵称/点赞状态） |
 | `getUnreadCount` | 未读通知数 |
 | `getNotifications` | 通知列表 |
 | `markAllRead` / `markRead` | 标记已读 |
+| `likePost` | 点赞动态（幂等，写 feed_likes，social_feed.likes+1） |
+| `unlikePost` | 取消点赞（幂等，删 feed_likes，social_feed.likes-1） |
 | `listUsers` | 发现箭友列表 |
 | `listClubs` | 俱乐部列表（含 isJoined 状态） |
 | `joinClub` | 加入俱乐部（写 club_members，memberCount+1） |
 | `leaveClub` | 退出俱乐部（删 club_members，memberCount-1） |
 | `createClub` | 创建俱乐部（名称去重，自动加入） |
+| `getUserProfile` | 查看他人公开主页（资料 + 训练次数 + 最近 5 条动态） |
+| `getClubDetail` | 俱乐部详情（基本信息 + 成员列表 + isJoined 状态） |
+
+### `init` 云函数（一次性运维工具）
+
+在微信开发者工具「云函数 → 在云端测试」中手动触发，用途：
+1. 创建全部 11 个数据库集合（已存在则跳过，幂等）
+2. 将历史 `training_records` 回填到 `social_feed`（已有对应条目则跳过）
 
 ### `events` 云函数（待上线）
 
@@ -146,6 +158,7 @@ await api.social.createClub({ name, city })
 | `notifications` | 系统通知 |
 | `clubs` | 俱乐部信息（name/city/memberCount/creatorOpenid） |
 | `club_members` | 俱乐部成员关系（openid + clubId） |
+| `feed_likes` | 动态点赞记录（openid + feedId，去重用） |
 | `follows` | 关注关系（暂未启用） |
 
 ---
@@ -294,13 +307,24 @@ app.globalData.navBarHeight
 ### 7. mine.js 加载性能
 `_load()` 使用 `this._lastLoadTime` 做 60 秒防抖缓存，避免反复切 Tab 时重复发起 4 个并发云函数请求。训练记录拉取上限为 60 条（streak 计算足够）。
 
+### 8. 弹层模态框规范
+- `catchtap="noop"` 阻止内层卡片点击冒泡到外层遮罩关闭；`catchtap=""` **无效**（WeChat 要求传函数名）
+- 弹层内 `<input>` 必须加 `adjust-position="{{false}}"` 阻止键盘把 `position: fixed` 弹层顶飞
+- `noop() {}` 方法每个有弹层的 Page 都需声明
+
+### 9. 首页白屏优化
+`index.js _loadFeed()` 先读 `wx.getStorageSync('training_history')` 本地缓存渲染，再异步拉云端数据覆盖，消除冷启动白屏。
+
+### 10. profileDirty 缓存失效
+`profile.js` 保存资料成功后设 `app.globalData.profileDirty = true`，`mine.js _load()` 检查该标志，命中时强制刷新（跳过 60 秒缓存）。
+
 ---
 
 ## 当前开发状态（2026-05-22）
 
 ### 已完成 ✅
 - 完整训练录入流程（积分赛/淘汰赛/自由练习）
-- 虚拟对手淘汰赛（基于历史记录的正态分布模型）
+- 虚拟对手淘汰赛（基于历史记录的正态分布模型，抢 6 分制规则）
 - 训练数据统计页（周/月图表）
 - 训练详情 + 分享朋友圈卡片（canvas 生成）
 - 训练详情智能分析（7 条动态规则：精准度/脱靶/体力曲线/稳定性/最佳组/完美组/淘汰赛结果）
@@ -308,19 +332,28 @@ app.globalData.navBarHeight
 - 成就系统（5 个成就，2 列网格折叠，点击查看解锁时间和要求）
 - 微信原生头像/昵称获取（type="nickname"），头像云存储
 - 箭友动态流（含用户头像同步，点击自己的记录可进入详情）
-- 俱乐部：创建/搜索/加入/退出（profile 页 + 发现页双入口功能完整对齐）
-- 我的页面：等级/连续天数/所属俱乐部徽章/成就/菜单
 - 首页动态点赞（乐观更新，catchtap 防止冒泡到详情跳转）
+- 俱乐部：创建/搜索/加入/退出（profile 页 + 发现页双入口功能完整对齐，弹层 bug 已修）
+- 我的页面：等级/连续天数/所属俱乐部徽章/成就/菜单
+- 用户主页（他人公开资料 + 训练统计 + 最近动态）
+- 俱乐部详情页（信息 + 成员列表 + 加入/退出）
+- 微信隐私授权弹层（`__usePrivacyCheck__: true`，首次启动弹出）
+- 首页冷启动白屏优化（本地缓存先渲染，云端数据后覆盖）
+- 数据库一键初始化 `init` 云函数（建集合 + 历史记录回填 social_feed）
 
 ### 等待上线 ⏳（代码已写，入口已注释）
 - 赛事系统（发布/报名/报名管理）
   - 恢复方式：取消 mine.wxml 中"我的报名"的注释，tabs 里加回 events tab
 
 ### 待开发 📋
-- 俱乐部详情页（成员列表、管理功能）
-- 用户详情页（查看他人主页）
-- 社交关注 / 点赞功能（`follows` 集合已建）
+- 社交关注功能（`follows` 集合已建，UI 未开发）
 - 赛事系统正式上线
+
+### 手动运维步骤（新环境首次部署）
+1. 微信开发者工具上传并部署云函数：`user` / `training` / `social` / `goal` / `init`
+2. 云端测试 `init` 函数（建集合 + 回填历史数据）
+3. 在 mp.weixin.qq.com → 隐私 → 用户隐私保护指引 中填写隐私协议
+4. 云数据库 → 对应集合建索引（参见 `cloudfunctions/db-init.md`）
 
 ---
 

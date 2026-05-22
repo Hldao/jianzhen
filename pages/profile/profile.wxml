@@ -145,7 +145,7 @@
 
 <!-- 创建俱乐部弹层 -->
 <view wx:if="{{showCreateClub}}" class="cc-mask" catchtap="closeCreateClub">
-  <view class="cc-card" catchtap="">
+  <view class="cc-card" catchtap="noop">
     <text class="cc-title">创建俱乐部</text>
     <text class="cc-sub">向社区添加你的俱乐部，方便箭友找到</text>
 
@@ -170,6 +170,7 @@
         maxlength="20"
         value="{{newClubCity}}"
         bindinput="inputNewClubCity"
+        adjust-position="{{false}}"
       />
     </view>
 

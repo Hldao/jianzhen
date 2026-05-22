@@ -225,4 +225,6 @@ Page({
   goBack() {
     wx.navigateBack()
   },
+
+  noop() {},
 })
