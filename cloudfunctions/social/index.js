@@ -57,6 +57,7 @@ async function getPublicFeed(openid, opts = {}) {
           .where({ _openid: openid, feedId: _.in(feedIds) })
           .field({ feedId: true })
           .get()
+          .catch(() => ({ data: [] }))  // feed_likes 集合不存在时降级
       : Promise.resolve({ data: [] }),
   ])
 
