@@ -197,3 +197,23 @@
 
   <view class="bottom-safe"></view>
 </scroll-view>
+
+<!-- ── 隐私授权弹层（微信审核要求） ── -->
+<view wx:if="{{showPrivacy}}" class="privacy-mask">
+  <view class="privacy-card">
+    <text class="privacy-icon">🏹</text>
+    <text class="privacy-title">欢迎使用箭证</text>
+    <text class="privacy-sub">开始使用前，请阅读并同意隐私政策</text>
+    <view class="privacy-body">
+      <text class="privacy-text">我们会收集以下信息用于提供服务：\n\n• 微信昵称和头像（用于个人展示）\n• 训练记录数据（用于成绩分析和社区动态）\n\n您的数据仅用于箭证 App 内的训练追踪与箭友社区功能，不会出售或用于其他商业目的。</text>
+    </view>
+    <view class="privacy-btns">
+      <view class="privacy-btn-cancel" bindtap="disagreePrivacy">不同意</view>
+      <button
+        class="privacy-btn-agree"
+        open-type="agreePrivacyAuthorization"
+        bindagreeprivacyauthorization="agreePrivacy"
+      >同意并继续</button>
+    </view>
+  </view>
+</view>

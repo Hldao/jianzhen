@@ -139,9 +139,45 @@
 | `totalArrows`| number |                         |
 | `mode`       | string |                         |
 | `note`       | string |                         |
+| `likes`      | number | 点赞数，默认 0           |
 | `createdAt`  | date   |                         |
 
 **索引**：`_openid + ts`（降序）
+
+---
+
+### 9. `feed_likes` — 动态点赞记录
+| 字段      | 类型   | 说明                       |
+|----------|--------|----------------------------|
+| `_openid`| string | 点赞用户 openid            |
+| `feedId` | string | social_feed 文档 _id       |
+| `ts`     | date   | 点赞时间                   |
+
+**索引**：`_openid + feedId`（唯一，防重复点赞）
+
+---
+
+### 10. `clubs` — 俱乐部
+| 字段              | 类型   | 说明                       |
+|------------------|--------|----------------------------|
+| `name`           | string | 俱乐部名称（唯一）          |
+| `city`           | string | 所在城市（可选）            |
+| `creatorOpenid`  | string | 创建者 openid              |
+| `memberCount`    | number | 成员数，默认 1              |
+| `createdAt`      | date   |                            |
+
+**索引**：`name`（唯一）、`memberCount`（降序，用于列表排序）
+
+---
+
+### 11. `club_members` — 俱乐部成员关系
+| 字段       | 类型   | 说明                  |
+|-----------|--------|----------------------|
+| `_openid` | string | 成员 openid          |
+| `clubId`  | string | clubs 文档 _id       |
+| `joinedAt`| date   | 加入时间              |
+
+**索引**：`_openid + clubId`（唯一）
 
 ---
 
@@ -174,6 +210,17 @@
 | follows               | 仅创建者可读写        |
 | social_feed           | 所有人可读，仅创建者写 |
 | notifications         | 仅创建者可读写        |
+| feed_likes            | 仅创建者可读写        |
+| clubs                 | 所有人可读，仅创建者写 |
+| club_members          | 仅创建者可读写        |
+
+## 云存储权限
+
+云开发控制台 → 存储 → 权限设置：
+
+| 路径前缀     | 权限              |
+|------------|------------------|
+| `avatars/` | 所有人可读，仅上传者可写 |
 
 > 注意：云函数运行在服务端，拥有管理员权限，不受以上规则限制。  
 > 以上规则只影响小程序端直接访问数据库的情况（我们的项目全走云函数，权限规则只是额外安全保障）。

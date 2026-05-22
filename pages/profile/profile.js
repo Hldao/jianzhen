@@ -208,6 +208,7 @@ Page({
     const profile = { avatarUrl, nickName: nickName.trim(), city, bowType, trainDist, club, clubId }
     const app = getApp()
     app.globalData.userInfo = { ...app.globalData.userInfo, ...profile }
+    app.globalData.profileDirty = true  // 通知 mine 页刷新
     try {
       const api = require('../../utils/cloud')
       await api.user.updateProfile(profile)

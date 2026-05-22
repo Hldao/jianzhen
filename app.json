@@ -16,6 +16,7 @@
     "pages/createevent/createevent",
     "pages/regmanage/regmanage"
   ],
+  "__usePrivacyCheck__": true,
   "window": {
     "navigationStyle": "custom",
     "backgroundColor": "#F5F5F5"

@@ -24,6 +24,12 @@ App({
 
     // ── 登录 & 初始化用户数据 ────────────────────
     this._initUser()
+
+    // ── 隐私授权检查（微信审核要求）────────────
+    wx.getPrivacySetting({
+      success: res => { this.globalData.privacyNeeded = res.needAuthorization },
+      fail:    ()  => { this.globalData.privacyNeeded = false },
+    })
   },
 
   // 登录流程：调用 user/login 云函数，写入 globalData
@@ -47,10 +53,12 @@ App({
   },
 
   globalData: {
-    userInfo:        null,   // 当前用户信息（来自云数据库）
+    userInfo:        null,
     statusBarHeight: 20,
     navBarHeight:    44,
     menuButton:      null,
     currentRecord:   null,   // 训练结束后暂存，供 detail 页读取
+    privacyNeeded:   false,  // 是否需要弹出隐私授权弹层
+    profileDirty:    false,  // profile 页保存后，通知 mine 页刷新
   },
 })

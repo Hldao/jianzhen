@@ -168,10 +168,13 @@ Page({
 
   async _load() {
     const now = Date.now()
+    const app = getApp()
+    if (app.globalData.profileDirty) {
+      app.globalData.profileDirty = false
+      this._lastLoadTime = 0  // 强制刷新
+    }
     if (this._lastLoadTime && now - this._lastLoadTime < 60000) return
     this._lastLoadTime = now
-
-    const app = getApp()
     const cached = app.globalData.userInfo
     if (cached) {
       this.setData({

@@ -62,6 +62,7 @@ async function save(openid, record) {
       totalArrows:data.totalArrows,
       mode:       data.mode,
       note:       data.note ?? '',
+      likes:      0,
       createdAt:  db.serverDate(),
     }
   })

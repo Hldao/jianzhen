@@ -20,6 +20,8 @@ exports.main = async (event, context) => {
     case 'joinClub':         return joinClub(OPENID, event.clubId)
     case 'leaveClub':        return leaveClub(OPENID, event.clubId)
     case 'createClub':       return createClub(OPENID, event.data || {})
+    case 'likePost':         return likePost(OPENID, event.feedId)
+    case 'unlikePost':       return unlikePost(OPENID, event.feedId)
     default:                 return { code: 400, msg: 'unknown action' }
   }
 }
@@ -39,19 +41,33 @@ async function getPublicFeed(openid, opts = {}) {
     return { code: 0, feed: [], hasMore: false }
   }
 
-  // 批量拉取用户昵称（去重）
+  // 批量拉取用户昵称（去重）+ 当前用户点赞状态
+  const feedIds   = feedRes.data.map(f => f._id)
   const uniqueIds = [...new Set(feedRes.data.map(f => f._openid))]
-  const usersRes = await db.collection('users')
-    .where({ _openid: _.in(uniqueIds) })
-    .field({ _openid: true, nickName: true, avatarUrl: true })
-    .get()
-  const userMap = {}
+
+  const [usersRes, likedRes] = await Promise.all([
+    db.collection('users')
+      .where({ _openid: _.in(uniqueIds) })
+      .field({ _openid: true, nickName: true, avatarUrl: true })
+      .get(),
+    feedIds.length > 0
+      ? db.collection('feed_likes')
+          .where({ _openid: openid, feedId: _.in(feedIds) })
+          .field({ feedId: true })
+          .get()
+      : Promise.resolve({ data: [] }),
+  ])
+
+  const userMap  = {}
   for (const u of usersRes.data) userMap[u._openid] = u
+  const likedSet = new Set(likedRes.data.map(l => l.feedId))
 
   const feed = feedRes.data.map(item => ({
     ...item,
     isMine: item._openid === openid,
-    user: userMap[item._openid] ?? { nickName: '箭证用户', avatarUrl: '' },
+    liked:  likedSet.has(item._id),
+    likes:  item.likes || 0,
+    user:   userMap[item._openid] ?? { nickName: '箭证用户', avatarUrl: '' },
   }))
 
   return { code: 0, feed, hasMore: feed.length === limit }
@@ -197,6 +213,42 @@ async function leaveClub(openid, clubId) {
     db.collection('club_members').doc(res.data[0]._id).remove(),
     db.collection('clubs').doc(clubId).update({
       data: { memberCount: _.inc(-1) }
+    }),
+  ])
+  return { code: 0 }
+}
+
+// ── 点赞 ──────────────────────────────────────────────────────────
+async function likePost(openid, feedId) {
+  if (!feedId) return { code: 400, msg: 'feedId required' }
+  const exist = await db.collection('feed_likes')
+    .where({ _openid: openid, feedId })
+    .count()
+  if (exist.total > 0) return { code: 0 }  // 已点赞，幂等
+
+  await Promise.all([
+    db.collection('feed_likes').add({
+      data: { _openid: openid, feedId, ts: db.serverDate() },
+    }),
+    db.collection('social_feed').doc(feedId).update({
+      data: { likes: _.inc(1) },
+    }),
+  ])
+  return { code: 0 }
+}
+
+// ── 取消点赞 ──────────────────────────────────────────────────────
+async function unlikePost(openid, feedId) {
+  if (!feedId) return { code: 400, msg: 'feedId required' }
+  const res = await db.collection('feed_likes')
+    .where({ _openid: openid, feedId })
+    .get()
+  if (!res.data.length) return { code: 0 }  // 未点赞，幂等
+
+  await Promise.all([
+    db.collection('feed_likes').doc(res.data[0]._id).remove(),
+    db.collection('social_feed').doc(feedId).update({
+      data: { likes: _.inc(-1) },
     }),
   ])
   return { code: 0 }

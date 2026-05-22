@@ -143,9 +143,11 @@ Page({
 
     // 箭友动态
     feeds: [],
-    feedEmpty: false,   // 是否已无关注（引导态）
+    feedEmpty: false,
     feedLoading: true,
 
+    // 隐私授权弹层
+    showPrivacy: false,
   },
 
   onLoad() {
@@ -160,12 +162,14 @@ Page({
       this.setData({ showQuote: true, quoteText: q.text, quoteAuthor: q.author })
       setTimeout(() => this.setData({ showQuote: false }), 4200)
     }
+    this._checkPrivacy()
   },
 
   async onShow() {
     if (typeof this.getTabBar === 'function') {
       this.getTabBar().setData({ selected: 0 })
     }
+    this._checkPrivacy()
     try {
       const api = require('../../utils/cloud')
       const res = await api.training.list({ limit: 200 })
@@ -251,6 +255,27 @@ Page({
     if (diff < 86400000 * 3) return `${Math.floor(diff / 86400000)}天前`
     const d = new Date(ts)
     return `${d.getMonth() + 1}月${d.getDate()}日`
+  },
+
+  _checkPrivacy() {
+    const app = getApp()
+    if (app.globalData.privacyNeeded && !this.data.showPrivacy) {
+      app.globalData.privacyNeeded = false
+      this.setData({ showPrivacy: true })
+    }
+  },
+
+  agreePrivacy() {
+    this.setData({ showPrivacy: false })
+  },
+
+  disagreePrivacy() {
+    wx.showModal({
+      title: '无法继续',
+      content: '您需要同意《隐私政策》才能正常使用箭证。',
+      showCancel: false,
+      confirmText: '重新阅读',
+    })
   },
 
   goGoal() {

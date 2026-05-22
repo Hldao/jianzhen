@@ -86,10 +86,13 @@ const social = {
   // 发现用户
   listUsers:        (opts) => call('social', 'listUsers',        { opts }),
   // 俱乐部
-  listClubs:        (opts) => call('social', 'listClubs',        { opts }),
-  joinClub:         (data) => call('social', 'joinClub',         data),
-  leaveClub:        (data) => call('social', 'leaveClub',        data),
-  createClub:       (data) => call('social', 'createClub',       { data }),
+  listClubs:        (opts)   => call('social', 'listClubs',   { opts }),
+  joinClub:         (data)   => call('social', 'joinClub',    data),
+  leaveClub:        (data)   => call('social', 'leaveClub',   data),
+  createClub:       (data)   => call('social', 'createClub',  { data }),
+  // 点赞
+  likePost:         (feedId) => call('social', 'likePost',    { feedId }),
+  unlikePost:       (feedId) => call('social', 'unlikePost',  { feedId }),
 }
 
 module.exports = { user, training, event, goal, social }
