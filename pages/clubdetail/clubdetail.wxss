@@ -41,7 +41,11 @@ page {
   margin-bottom: 20rpx;
 }
 .ch-letter { font-size: 56rpx; font-weight: 900; color: #fff; }
-.ch-name   { font-size: 40rpx; font-weight: 900; color: #fff; margin-bottom: 16rpx; }
+.ch-name   {
+  font-size: 40rpx; font-weight: 900; color: #fff; margin-bottom: 16rpx;
+  max-width: 80vw; text-align: center;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .ch-meta-row { display: flex; gap: 12rpx; margin-bottom: 32rpx; }
 .ch-tag {
   background: rgba(255,255,255,.2); color: rgba(255,255,255,.9);
@@ -85,12 +89,20 @@ page {
   display: flex; align-items: center; justify-content: center;
   font-size: 32rpx; color: #fff; font-weight: 700;
 }
-.member-info { flex: 1; }
-.member-name-row { display: flex; align-items: center; gap: 12rpx; margin-bottom: 6rpx; }
-.member-name { font-size: 28rpx; font-weight: 600; color: var(--text); }
+.member-info { flex: 1; min-width: 0; overflow: hidden; }
+.member-name-row { display: flex; align-items: center; gap: 12rpx; margin-bottom: 6rpx; min-width: 0; }
+.member-name {
+  font-size: 28rpx; font-weight: 600; color: var(--text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  min-width: 0; flex-shrink: 1;
+}
 .creator-badge {
   background: rgba(255,107,53,.1); color: var(--primary);
   font-size: 20rpx; font-weight: 600; padding: 4rpx 14rpx; border-radius: 12rpx;
+  flex-shrink: 0;
 }
-.member-sub  { font-size: 22rpx; color: var(--text-mid); }
+.member-sub  {
+  font-size: 22rpx; color: var(--text-mid);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .member-arrow { font-size: 36rpx; color: var(--border); margin-left: 8rpx; }

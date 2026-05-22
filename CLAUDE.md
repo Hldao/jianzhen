@@ -318,6 +318,21 @@ app.globalData.navBarHeight
 ### 10. profileDirty 缓存失效
 `profile.js` 保存资料成功后设 `app.globalData.profileDirty = true`，`mine.js _load()` 检查该标志，命中时强制刷新（跳过 60 秒缓存）。
 
+### 11. 数据迁移幂等
+`app.js _initUser()` 用 `wx.getStorageSync('migration_done')` 旗标 + 云函数 `training.migrate` 内部按 `ts` 去重，双保险防止用户重启后本地历史数据被重复写入云端。
+
+### 12. 点赞互斥锁
+`index.js toggleLike` 用 `this._likingIds: Set` 防止快速连点导致 like/unlike 交错；请求失败时回滚 UI 计数，保证 UI 与云端最终一致。
+
+### 13. 通知徽章生命周期
+首页 `onShow` 时 `wx.setTabBarBadge({index: 2})` 设徽章（挂在"我的"Tab），进入 `mine` 或 `notification` 页时 `wx.removeTabBarBadge({index: 2})` 清除；`notification.onShow` 同时调 `markAllRead` 标记云端已读。
+
+### 14. 训练记录权限
+`training.save` 更新分支（含 _id）必须先 `doc(_id).get()` 校验 `_openid === openid`，否则返回 403。`social_feed` 同步更新也要带 `_openid` 条件，防止改他人动态备注。
+
+### 15. 云函数错误兜底
+`social/index.js` 顶层 try/catch 把异常包成 `{ code: 500, msg, stack }` 返回，前端能直接 Console 看到，不被静默吞掉。其他云函数尚未统一，是已知技术债。
+
 ---
 
 ## 当前开发状态（2026-05-22）
@@ -340,6 +355,7 @@ app.globalData.navBarHeight
 - 微信隐私授权弹层（`__usePrivacyCheck__: true`，首次启动弹出）
 - 首页冷启动白屏优化（本地缓存先渲染，云端数据后覆盖）
 - 数据库一键初始化 `init` 云函数（建集合 + 历史记录回填 social_feed）
+- 上线前体检：数据迁移幂等 / 点赞互斥锁 / 通知徽章清除 / 训练记录权限校验 / 长文本截断（5 处页面）
 
 ### 等待上线 ⏳（代码已写，入口已注释）
 - 赛事系统（发布/报名/报名管理）

@@ -21,7 +21,7 @@ exports.main = async (event, context) => {
 
 // ── 保存一条训练记录 ───────────────────────────────────────────────
 // record 中不含 _id 时为新增，含 _id 时为更新备注等可编辑字段
-async function save(openid, record) {
+async function save(openid, record = {}) {
   const { _id, ...data } = record
 
   // 计算均环/支（前端也可以传过来，这里服务端兜底计算）
@@ -30,13 +30,18 @@ async function save(openid, record) {
   }
 
   if (_id) {
+    // 鉴权：只能改自己的记录
+    const existing = await db.collection('training_records').doc(_id).get()
+    if (!existing.data || existing.data._openid !== openid) {
+      return { code: 403, msg: '无权限' }
+    }
     // 只允许更新 note 字段（其他是记录本身不应被篡改）
     await db.collection('training_records').doc(_id).update({
       data: { note: data.note ?? '' }
     })
     // 同步更新 social_feed 里的备注
     await db.collection('social_feed')
-      .where({ recordId: _id })
+      .where({ recordId: _id, _openid: openid })
       .update({ data: { note: data.note ?? '' } })
     return { code: 0, _id }
   }
@@ -117,15 +122,29 @@ async function del(openid, id) {
 
 // ── 迁移本地历史数据（一次性调用） ──────────────────────────────────
 // 把 wx.getStorageSync('training_history') 的数组批量写入云端
+// 幂等：先按 ts 查云端已存在的记录，避免用户重复触发导致翻倍
 async function migrate(openid, records) {
   if (!Array.isArray(records) || records.length === 0) return { code: 0, count: 0 }
 
-  const tasks = records.map(r => {
-    const { id, ...rest } = r   // 旧版用 id 作为时间戳
+  const tsList = records.map(r => r.id).filter(Boolean)
+  let existingTs = new Set()
+  if (tsList.length > 0) {
+    const existing = await db.collection('training_records')
+      .where({ _openid: openid, ts: _.in(tsList) })
+      .field({ ts: true })
+      .get()
+    existingTs = new Set(existing.data.map(d => d.ts))
+  }
+
+  const fresh = records.filter(r => !existingTs.has(r.id))
+  if (fresh.length === 0) return { code: 0, count: 0, skipped: records.length }
+
+  const tasks = fresh.map(r => {
+    const { id, ...rest } = r
     return db.collection('training_records').add({
       data: { ...rest, _openid: openid, ts: id, createdAt: db.serverDate() }
     })
   })
   await Promise.all(tasks)
-  return { code: 0, count: records.length }
+  return { code: 0, count: fresh.length, skipped: records.length - fresh.length }
 }

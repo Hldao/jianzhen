@@ -17,7 +17,13 @@ Page({
   },
 
   async onShow() {
+    wx.removeTabBarBadge({ index: 2 })
     this._load()
+    // 进入通知页即标记所有为已读（无需等待）
+    try {
+      const api = require('../../utils/cloud')
+      api.social.markAllRead().catch(() => {})
+    } catch (e) {}
   },
 
   async _load() {

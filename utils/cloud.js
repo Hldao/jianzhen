@@ -29,7 +29,6 @@ const user = {
   getProfile:     ()       => call('user', 'getProfile'),
   updateProfile:  (data)   => call('user', 'updateProfile', { data }),
   getStats:       ()       => call('user', 'getStats'),
-  saveGoal:       (data)   => call('user', 'saveGoal',      { data }),
 }
 
 // ── 训练记录 ──────────────────────────────────────────────────────

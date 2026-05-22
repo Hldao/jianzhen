@@ -19,9 +19,12 @@ exports.main = async () => {
       await db.createCollection(name)
       collResults[name] = '✅ created'
     } catch (e) {
-      collResults[name] = (e.errCode === -502005 || String(e.message).includes('already exists'))
-        ? '⏭ already exists'
-        : `❌ ${e.message}`
+      const msg = String(e.message || '')
+      const isExist = e.errCode === -502005
+        || e.errCode === -501001
+        || msg.includes('already exists')
+        || msg.includes('Table exist')
+      collResults[name] = isExist ? '⏭ already exists' : `❌ ${e.message}`
     }
   }
 

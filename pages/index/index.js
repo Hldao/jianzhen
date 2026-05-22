@@ -234,13 +234,13 @@ Page({
     try {
       const api = require('../../utils/cloud')
       const res = await api.social.getPublicFeed({ limit: 10 })
-      const feeds = res.feed.map(f => ({
+      const feeds = (res.feed || []).map(f => ({
         ...f,
         timeLabel:  this._formatFeedTime(f.ts),
         likes:      f.likes || 0,
         liked:      f.liked || false,
         tag:        f.tag || (f.isPB ? '个人最佳' : f.streakDay >= 7 ? `连续训练第 ${f.streakDay} 天` : ''),
-        sourceType: f.sourceType || '',  // 'wx_friend' | 'club' | ''
+        sourceType: f.sourceType || '',
       }))
       this.setData({
         feeds,
@@ -291,17 +291,31 @@ Page({
   toggleLike(e) {
     const idx = e.currentTarget.dataset.index
     const item = this.data.feeds[idx]
+    if (!item) return
+    this._likingIds = this._likingIds || new Set()
+    if (this._likingIds.has(item._id)) return  // 互斥：等当前请求完成再响应下一次
+    this._likingIds.add(item._id)
+
     const liked = !item.liked
     this.setData({
       [`feeds[${idx}].liked`]: liked,
       [`feeds[${idx}].likes`]: liked ? item.likes + 1 : Math.max(0, item.likes - 1),
     })
-    try {
-      const api = require('../../utils/cloud')
-      liked
-        ? api.social.likePost({ feedId: item._id }).catch(() => {})
-        : api.social.unlikePost({ feedId: item._id }).catch(() => {})
-    } catch (e) {}
+    const api = require('../../utils/cloud')
+    const req = liked ? api.social.likePost({ feedId: item._id })
+                      : api.social.unlikePost({ feedId: item._id })
+    req
+      .catch(() => {
+        // 失败回滚 UI
+        const cur = this.data.feeds[idx]
+        if (cur && cur._id === item._id) {
+          this.setData({
+            [`feeds[${idx}].liked`]: !liked,
+            [`feeds[${idx}].likes`]: liked ? Math.max(0, cur.likes - 1) : cur.likes + 1,
+          })
+        }
+      })
+      .finally(() => { this._likingIds.delete(item._id) })
   },
 
   openTraining() {

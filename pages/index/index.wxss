@@ -214,10 +214,14 @@ page {
 }
 .feed-avatar-img { background: #E8ECF2; box-shadow: 0 6rpx 16rpx rgba(0,0,0,.12); }
 .feed-emoji  { font-size: 36rpx; }
-.feed-body   { flex: 1; display: flex; flex-direction: column; gap: 6rpx; }
-.feed-top    { display: flex; justify-content: space-between; align-items: center; }
-.feed-name-row { display: flex; align-items: center; gap: 10rpx; }
-.feed-name   { font-size: 28rpx; font-weight: 600; color: var(--text); }
+.feed-body   { flex: 1; display: flex; flex-direction: column; gap: 6rpx; min-width: 0; overflow: hidden; }
+.feed-top    { display: flex; justify-content: space-between; align-items: center; gap: 12rpx; }
+.feed-name-row { display: flex; align-items: center; gap: 10rpx; flex: 1; min-width: 0; overflow: hidden; }
+.feed-name   {
+  font-size: 28rpx; font-weight: 600; color: var(--text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  flex-shrink: 1; min-width: 0;
+}
 .feed-time   { font-size: 22rpx; color: var(--text-light); flex-shrink: 0; }
 
 /* 来源标签（微信好友 / 俱乐部）*/

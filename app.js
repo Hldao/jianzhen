@@ -39,13 +39,14 @@ App({
       const res  = await api.user.login()
       this.globalData.userInfo = res.user
 
-      // 首次登录：迁移本地历史数据到云端
-      if (res.isNew) {
+      // 首次登录：迁移本地历史数据到云端（单次幂等：迁移成功后写旗标，避免重启重跑）
+      if (res.isNew && !wx.getStorageSync('migration_done')) {
         const local = wx.getStorageSync('training_history') || []
         if (local.length > 0) {
           await api.training.migrate(local)
           wx.removeStorageSync('training_history')
         }
+        wx.setStorageSync('migration_done', true)
       }
     } catch (e) {
       console.error('用户初始化失败', e)

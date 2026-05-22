@@ -168,15 +168,21 @@ page {
 }
 .club-search-input { height: 68rpx; font-size: 26rpx; color: var(--text); width: 100%; }
 
-.club-list { padding: 0 28rpx 16rpx; }
+.club-list { padding: 0 28rpx 16rpx; box-sizing: border-box; }
 .club-list-item {
   display: flex; align-items: center; justify-content: space-between;
   padding: 24rpx 0; border-bottom: 1rpx solid var(--border);
-  gap: 16rpx;
+  gap: 16rpx; width: 100%; box-sizing: border-box;
 }
-.cli-main { flex: 1; display: flex; flex-direction: column; gap: 4rpx; min-width: 0; }
-.cli-name { font-size: 28rpx; color: var(--text); }
-.cli-city { font-size: 22rpx; color: var(--text-light); }
+.cli-main { flex: 1; display: flex; flex-direction: column; gap: 4rpx; min-width: 0; overflow: hidden; }
+.cli-name {
+  font-size: 28rpx; color: var(--text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cli-city {
+  font-size: 22rpx; color: var(--text-light);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .cli-right { display: flex; align-items: center; gap: 12rpx; flex-shrink: 0; }
 .cli-count { font-size: 22rpx; color: var(--text-light); }
 .cli-joined-badge {

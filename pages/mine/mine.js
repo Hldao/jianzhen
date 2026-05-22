@@ -163,6 +163,7 @@ Page({
     if (typeof this.getTabBar === 'function') {
       this.getTabBar().setData({ selected: 2 })
     }
+    wx.removeTabBarBadge({ index: 2 })
     this._load()
   },
 

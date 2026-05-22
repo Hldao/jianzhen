@@ -9,6 +9,16 @@ exports.main = async (event, context) => {
   const { OPENID } = cloud.getWXContext()
   const { action }  = event
 
+  try {
+    return await dispatch(OPENID, event)
+  } catch (e) {
+    console.error('[social] action=' + action + ' failed:', e)
+    return { code: 500, msg: String(e && e.message || e), stack: String(e && e.stack || '') }
+  }
+}
+
+async function dispatch(OPENID, event) {
+  const { action } = event
   switch (action) {
     case 'getPublicFeed':    return getPublicFeed(OPENID, event.opts)
     case 'getUnreadCount':   return getUnreadCount(OPENID)
