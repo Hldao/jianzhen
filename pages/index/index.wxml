@@ -141,6 +141,9 @@
         wx:for="{{feeds}}"
         wx:key="_id"
         class="feed-item {{item.isMine ? 'feed-item-mine' : ''}}"
+        bindtap="openFeedDetail"
+        data-id="{{item.recordId}}"
+        data-is-mine="{{item.isMine}}"
       >
         <image
           wx:if="{{item.user.avatarUrl}}"
@@ -172,7 +175,7 @@
           <view class="feed-actions">
             <view
               class="feed-like-btn {{item.liked ? 'feed-like-btn-liked' : ''}}"
-              bindtap="toggleLike" data-index="{{index}}"
+              catchtap="toggleLike" data-index="{{index}}"
             >
               <view class="lc lc-xs {{item.liked ? 'lc-red lc-heart-solid' : 'lc-gray lc-heart'}}"></view>
               <text>{{item.likes}}</text>

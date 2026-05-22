@@ -71,7 +71,10 @@ Page({
 
   async toggleJoin(e) {
     const { id, index } = e.currentTarget.dataset
+    if (this._joiningId) return
     const club = this.data.clubs[index]
+    if (!club) return
+    this._joiningId = id
     const api = require('../../utils/cloud')
     try {
       if (club.isJoined) {
@@ -81,10 +84,12 @@ Page({
       }
       const clubs = [...this.data.clubs]
       const delta = club.isJoined ? -1 : 1
-      clubs[index] = { ...club, isJoined: !club.isJoined, memberCount: club.memberCount + delta }
+      clubs[index] = { ...club, isJoined: !club.isJoined, memberCount: (club.memberCount || 0) + delta }
       this.setData({ clubs })
-    } catch (e) {
+    } catch (err) {
       wx.showToast({ title: '操作失败，请重试', icon: 'none' })
+    } finally {
+      this._joiningId = null
     }
   },
 

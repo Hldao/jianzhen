@@ -84,7 +84,7 @@ miniprogram-1/
 ```js
 const api = require('../../utils/cloud')
 await api.user.getProfile()
-await api.training.list({ limit: 200 })
+await api.training.list({ limit: 60 })
 await api.social.createClub({ name, city })
 ```
 
@@ -186,14 +186,26 @@ const SLOT_COLORS = {
 
 | 键名 | 结构 | 触发条件 |
 |------|------|----------|
-| `achievement_golden_end` | `{ earnedAt, count }` | 非淘汰赛，一组全部 ≥9 环且非完美 |
-| `achievement_perfect_end` | `{ earnedAt, count }` | 任意模式，一组全部 X 或 10 |
-| `achievement_first` | `{ earnedAt }` | 完成第一次训练（mine.js 中写入） |
-| `achievement_week` | `{ earnedAt }` | 连续训练 7 天（mine.js 中写入） |
-| `achievement_veteran` | `{ earnedAt }` | 累计训练 20 次（mine.js 中写入） |
-| `achievement_month` | `{ earnedAt }` | 连续训练 30 天（mine.js 中写入） |
+| `achievement_golden_end` | `{ earnedAt, count }` | 非淘汰赛，一组全部 ≥9 环且非完美（training.js 写入） |
+| `achievement_perfect_end` | `{ earnedAt, count }` | 任意模式，一组全部 X 或 10（training.js 写入） |
+| `achievement_first` | `{ earnedAt }` | 完成第一次训练（mine.js 写入） |
+| `achievement_week` | `{ earnedAt }` | 连续训练 7 天（mine.js 写入） |
+| `achievement_veteran` | `{ earnedAt }` | 累计训练 20 次（mine.js 写入） |
+| `achievement_month` | `{ earnedAt }` | 连续训练 30 天（mine.js 写入） |
 
-成就 ID 与展示映射在 `mine.js` 的 `buildAchievements()` 函数中维护。
+`mine.js` 中的 `buildAchievements(totalSessions, streak, goldenEndData, perfectEndData)` 使用 `readOrInit(key, condition, now)` 辅助函数：先读 Storage，不存在才写入，避免写后再读的冗余。
+
+**展示的 5 个成就（2 列网格，可折叠）：**
+
+| ID | 名称 | 解锁条件 |
+|----|------|----------|
+| `first` | 初心者 | 完成第一次训练 |
+| `golden_end` | 收黄 | 一组全命中 9 环及以上（可重复，显示次数） |
+| `perfect` | 完美一组 | 一组全 X/10 环（可重复，显示次数） |
+| `veteran` | 勤奋射手 | 连续 7 天 **或** 累计 20 次（两条件任满其一） |
+| `month` | 坚持30天 | 连续训练满 30 天 |
+
+点击成就格子打开底部弹层，显示解锁时间和触发要求。
 
 ---
 
@@ -268,10 +280,19 @@ const res = await api.user.getProfile()
 ```js
 const app = getApp()
 app.globalData.userInfo    // 当前用户信息（登录后写入）
-app.globalData.currentRecord  // 训练完成后暂存，供 detail 页读取
+app.globalData.currentRecord  // 训练完成后暂存，供 detail 页读取；detail 页 onUnload 时置 null
 app.globalData.statusBarHeight
 app.globalData.navBarHeight
 ```
+
+### 5. 俱乐部成员一致性
+`profile.js selectClub()` 选择新俱乐部时：先调 `leaveClub(旧 clubId)`，再调 `joinClub(新 clubId)`，确保 `club_members` 集合与 `users.club` 字段保持同步。`clearClub()` 同理先调 `leaveClub` 再清空本地数据。
+
+### 6. 训练默认设置恢复
+`training.js onLoad()` 读取 `wx.getStorageSync('training_last_settings')`，自动还原上次训练的弓种/距离/靶纸/模式/自定义参数/淘汰赛难度。`startTraining()` 第一行写入当次设置。
+
+### 7. mine.js 加载性能
+`_load()` 使用 `this._lastLoadTime` 做 60 秒防抖缓存，避免反复切 Tab 时重复发起 4 个并发云函数请求。训练记录拉取上限为 60 条（streak 计算足够）。
 
 ---
 
@@ -282,11 +303,14 @@ app.globalData.navBarHeight
 - 虚拟对手淘汰赛（基于历史记录的正态分布模型）
 - 训练数据统计页（周/月图表）
 - 训练详情 + 分享朋友圈卡片（canvas 生成）
-- 成就系统（6 个成就，折叠展示，点击查看详情）
-- 微信原生头像/昵称获取，头像云存储
-- 箭友动态流（含用户头像同步）
-- 俱乐部：创建/搜索/加入/退出（profile 页 + 发现页双入口对齐）
-- 我的页面：等级/连续天数/所属俱乐部/成就/菜单
+- 训练详情智能分析（7 条动态规则：精准度/脱靶/体力曲线/稳定性/最佳组/完美组/淘汰赛结果）
+- 训练参数记忆：开始训练页自动还原上次选项
+- 成就系统（5 个成就，2 列网格折叠，点击查看解锁时间和要求）
+- 微信原生头像/昵称获取（type="nickname"），头像云存储
+- 箭友动态流（含用户头像同步，点击自己的记录可进入详情）
+- 俱乐部：创建/搜索/加入/退出（profile 页 + 发现页双入口功能完整对齐）
+- 我的页面：等级/连续天数/所属俱乐部徽章/成就/菜单
+- 首页动态点赞（乐观更新，catchtap 防止冒泡到详情跳转）
 
 ### 等待上线 ⏳（代码已写，入口已注释）
 - 赛事系统（发布/报名/报名管理）

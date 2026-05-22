@@ -47,23 +47,23 @@ function formatDate(ts) {
   return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`
 }
 
+function readOrInit(key, condition, now) {
+  if (!condition) return null
+  let data = wx.getStorageSync(key) || null
+  if (!data) {
+    data = { earnedAt: now }
+    wx.setStorageSync(key, data)
+  }
+  return data
+}
+
 function buildAchievements(totalSessions, streak, goldenEndData, perfectEndData) {
   const now = Date.now()
 
-  // 里程碑成就首次解锁时自动存储时间
-  if (totalSessions > 0 && !wx.getStorageSync('achievement_first'))
-    wx.setStorageSync('achievement_first', { earnedAt: now })
-  if (streak >= 7 && !wx.getStorageSync('achievement_week'))
-    wx.setStorageSync('achievement_week', { earnedAt: now })
-  if (totalSessions >= 20 && !wx.getStorageSync('achievement_veteran'))
-    wx.setStorageSync('achievement_veteran', { earnedAt: now })
-  if (streak >= 30 && !wx.getStorageSync('achievement_month'))
-    wx.setStorageSync('achievement_month', { earnedAt: now })
-
-  const firstData   = totalSessions > 0 ? wx.getStorageSync('achievement_first')   || null : null
-  const weekData    = streak >= 7        ? wx.getStorageSync('achievement_week')    || null : null
-  const veteranData = totalSessions >= 20? wx.getStorageSync('achievement_veteran') || null : null
-  const monthData   = streak >= 30       ? wx.getStorageSync('achievement_month')   || null : null
+  const firstData   = readOrInit('achievement_first',   totalSessions > 0,   now)
+  const weekData    = readOrInit('achievement_week',    streak >= 7,         now)
+  const veteranData = readOrInit('achievement_veteran', totalSessions >= 20, now)
+  const monthData   = readOrInit('achievement_month',   streak >= 30,        now)
 
   // 勤奋射手 = 连续7天 OR 累计20次（合并）
   const diligentData = weekData || veteranData
@@ -167,6 +167,10 @@ Page({
   },
 
   async _load() {
+    const now = Date.now()
+    if (this._lastLoadTime && now - this._lastLoadTime < 60000) return
+    this._lastLoadTime = now
+
     const app = getApp()
     const cached = app.globalData.userInfo
     if (cached) {
@@ -181,7 +185,7 @@ Page({
       const [profileRes, statsRes, recordsRes, unreadRes] = await Promise.all([
         api.user.getProfile(),
         api.user.getStats(),
-        api.training.list({ limit: 200 }),
+        api.training.list({ limit: 60 }),
         api.social.getUnreadCount(),
       ])
 

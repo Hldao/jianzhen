@@ -32,10 +32,11 @@
       <input
         class="pf-input"
         type="nickname"
-        placeholder="点击使用微信昵称"
+        placeholder="点击填入微信昵称"
         value="{{nickName}}"
         maxlength="16"
         bindinput="onNicknameInput"
+        bindblur="onNicknameInput"
       />
     </view>
 

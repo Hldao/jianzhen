@@ -172,6 +172,30 @@ Page({
     const sh = app.globalData.statusBarHeight
     const nh = app.globalData.navBarHeight
     this.setData({ statusBarHeight: sh, navBarHeight: nh, navTop: sh + nh })
+
+    const last = wx.getStorageSync('training_last_settings')
+    if (last) {
+      const hints = {
+        '40cm':  '全10环 · 室内18m',
+        '60cm':  '室内25m / 室外近距离',
+        '80全':  '全10环（1-10+X）· 室外30m / 50m',
+        '80半':  '内5环（6-10+X）· 室内18m / 室外30m精准训练',
+        '122cm': '全10环 · 室外50m / 70m',
+      }
+      this.setData({
+        bowType:            last.bowType           || 'recurve',
+        distance:           last.distance          || '70m',
+        targetSize:         last.targetSize        || '122cm',
+        targetSizeHint:     hints[last.targetSize] || '',
+        mode:               last.mode              || 'ranking',
+        showCustom:         last.mode === 'custom',
+        customEnds:         last.customEnds        || 6,
+        customArrowsPerEnd: last.customArrowsPerEnd|| 6,
+        customTimeLimit:    last.customTimeLimit   || 180,
+        customTimeLimitLabel: fmtTimeLabel(last.customTimeLimit || 180),
+        elimDifficulty:     last.elimDifficulty    || 'normal',
+      })
+    }
   },
 
   // 从后台回到前台：用时间戳重新算剩余秒数，补偿后台耗时
@@ -268,7 +292,8 @@ Page({
   },
 
   startTraining() {
-    const { mode, customEnds, customArrowsPerEnd, customTimeLimit } = this.data
+    const { bowType, distance, targetSize, mode, customEnds, customArrowsPerEnd, customTimeLimit, elimDifficulty } = this.data
+    wx.setStorageSync('training_last_settings', { bowType, distance, targetSize, mode, customEnds, customArrowsPerEnd, customTimeLimit, elimDifficulty })
     const totalEnds    = mode === 'ranking' ? 12 : mode === 'elimination' ? 5 : customEnds
     const arrowsPerEnd = mode === 'ranking' ? 6  : mode === 'elimination' ? 3 : customArrowsPerEnd
     const endUnit      = mode === 'elimination' ? '局' : '组'

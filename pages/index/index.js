@@ -287,10 +287,22 @@ Page({
     wx.switchTab({ url: '/pages/data/data' })
   },
 
-  // 打开动态详情
-  openFeedDetail(e) {
-    const { id } = e.currentTarget.dataset
-    console.log('查看动态详情:', id)
+  async openFeedDetail(e) {
+    const { id, isMine } = e.currentTarget.dataset
+    if (!isMine || !id) return
+    try {
+      wx.showLoading({ title: '加载中…', mask: true })
+      const api = require('../../utils/cloud')
+      const res = await api.training.getOne(id)
+      wx.hideLoading()
+      if (res.record) {
+        getApp().globalData.currentRecord = res.record
+        wx.navigateTo({ url: '/pages/detail/detail' })
+      }
+    } catch (err) {
+      wx.hideLoading()
+      wx.showToast({ title: '加载失败', icon: 'none' })
+    }
   },
 
   openFeedList() {

@@ -53,10 +53,15 @@ Page({
     this._processRecord(record)
   },
 
+  onUnload() {
+    getApp().globalData.currentRecord = null
+  },
+
   _processRecord(record) {
     const endResults = record.endResults || []
-    const totalArrows = record.totalArrows || 0
+    if (!endResults.length) { wx.navigateBack(); return }
 
+    const totalArrows = record.totalArrows || 0
     const allArrows = endResults.flatMap(e => e.arrows)
     const xTenCount = allArrows.filter(a => a === 'X' || a === '10').length
     const xTenPct = totalArrows > 0 ? Math.round(xTenCount / totalArrows * 100) : 0
@@ -71,22 +76,53 @@ Page({
       slots:  end.arrows.map(a => ({ score: a, cls: ARROW_CLS(a) })),
     }))
 
-    const half = Math.floor(endResults.length / 2)
-    const firstScore  = endResults.slice(0, half).reduce((s, e) => s + e.total, 0)
-    const secondScore = endResults.slice(half).reduce((s, e) => s + e.total, 0)
-    const diff = secondScore - firstScore
     const insights = []
-
-    if (diff > 4)       insights.push(`后半段比前半段多得 ${diff} 环，专注度和体力保持得很好`)
-    else if (diff < -4) insights.push(`前半段状态更佳，后半段掉了 ${Math.abs(diff)} 环，注意保持到最后`)
-    else                insights.push('前后半段发挥均衡，稳定性出色')
-
     const best = endResults[bestIdx]
+
+    // ── 1. X/10 精准度（always）
+    if (xTenPct >= 30)      insights.push(`X/10环占比 ${xTenPct}%，精准度相当出色`)
+    else if (xTenPct >= 15) insights.push(`X/10环占比 ${xTenPct}%，精准度稳步提升中`)
+    else                    insights.push(`X/10环占比 ${xTenPct}%，建议加强靶心区域命中训练`)
+
+    // ── 2. 脱靶提醒（conditional：有 M 时才出现）
+    const missCount = allArrows.filter(a => a === 'M').length
+    if (missCount >= 2)     insights.push(`出现 ${missCount} 次脱靶，建议检查撒放时机与弓臂稳定性`)
+    else if (missCount === 1) insights.push('出现 1 次脱靶，注意保持瞄准稳定')
+
+    // ── 3. 前后半段体力曲线（4 组及以上才计算）
+    if (endResults.length >= 4) {
+      const half = Math.floor(endResults.length / 2)
+      const firstScore  = endResults.slice(0, half).reduce((s, e) => s + e.total, 0)
+      const secondScore = endResults.slice(half).reduce((s, e) => s + e.total, 0)
+      const diff = secondScore - firstScore
+      if (diff > 4)       insights.push(`后半段比前半段多得 ${diff} 环，体力与专注度全程在线`)
+      else if (diff < -4) insights.push(`后半段比前半段少得 ${Math.abs(diff)} 环，注意保持训练后半段的稳定`)
+      else                insights.push('前后半段发挥均衡，整体稳定性出色')
+    }
+
+    // ── 4. 各轮稳定性（4 组及以上，仅在表现显著时输出）
+    if (endResults.length >= 4) {
+      const totals = endResults.map(e => e.total)
+      const range = Math.max(...totals) - Math.min(...totals)
+      if (range <= 3)      insights.push(`各轮成绩最大相差仅 ${range} 环，一致性相当优秀`)
+      else if (range >= 10) insights.push(`各轮成绩最大相差 ${range} 环，发挥波动较大，可针对性加强稳定性`)
+    }
+
+    // ── 5. 最佳轮次（always）
     insights.push(`第 ${best.endNum} 轮发挥最佳，打出 ${best.total} 环`)
 
-    if (xTenPct >= 28)      insights.push(`X/10环占比 ${xTenPct}%，精准度相当出色`)
-    else if (xTenPct >= 15) insights.push(`X/10环占比 ${xTenPct}%，精准度稳步提升中`)
-    else                    insights.push(`X/10环占比 ${xTenPct}%，可重点练习高环值命中`)
+    // ── 6. 完美一组（conditional）
+    const perfectEndCount = endResults.filter(e => e.arrows.every(a => a === 'X' || a === '10')).length
+    if (perfectEndCount === 1) insights.push('本次打出一组完美成绩，所有箭矢命中 X/10 环！')
+    else if (perfectEndCount > 1) insights.push(`本次打出 ${perfectEndCount} 组完美成绩，状态绝佳！`)
+
+    // ── 7. 淘汰赛局数统计（conditional：仅模拟淘汰赛）
+    if (record.mode === '模拟淘汰赛') {
+      const setsWon  = endResults.filter(e => e.setResult === 'win').length
+      const setsDraw = endResults.filter(e => e.setResult === 'draw').length
+      const setsLost = endResults.filter(e => e.setResult === 'lose').length
+      insights.push(`本场共 ${endResults.length} 局：${setsWon} 胜 ${setsDraw} 平 ${setsLost} 负`)
+    }
 
     this._bestEnd = best
 
