@@ -63,8 +63,19 @@
         <text class="section-title">正在使用箭证</text>
         <text class="section-sub">{{users.length}}人</text>
       </view>
-      <view wx:for="{{users}}" wx:key="openid" class="user-row">
-        <view class="user-avatar user-avatar-txt">
+      <view
+        wx:for="{{users}}" wx:key="openid"
+        class="user-row"
+        bindtap="goUserProfile"
+        data-openid="{{item.openid}}"
+      >
+        <image
+          wx:if="{{item.avatarUrl}}"
+          class="user-avatar user-avatar-img"
+          src="{{item.avatarUrl}}"
+          mode="aspectFill"
+        ></image>
+        <view wx:else class="user-avatar user-avatar-txt">
           <text>{{item.nickName[0]}}</text>
         </view>
         <view class="user-info">
@@ -113,7 +124,12 @@
 
     <!-- 俱乐部列表 -->
     <view wx:elif="{{clubs.length}}" class="section-card">
-      <view wx:for="{{clubs}}" wx:key="_id" class="club-row">
+      <view
+        wx:for="{{clubs}}" wx:key="_id"
+        class="club-row"
+        bindtap="goClubDetail"
+        data-id="{{item._id}}"
+      >
         <view class="club-avatar">
           <text class="club-avatar-emoji">🏹</text>
         </view>

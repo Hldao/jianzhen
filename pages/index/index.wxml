@@ -144,6 +144,7 @@
         bindtap="openFeedDetail"
         data-id="{{item.recordId}}"
         data-is-mine="{{item.isMine}}"
+        data-openid="{{item.openid}}"
       >
         <image
           wx:if="{{item.user.avatarUrl}}"

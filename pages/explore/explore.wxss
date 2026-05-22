@@ -84,6 +84,9 @@ page {
   padding: 20rpx 0; border-bottom: 1rpx solid var(--border);
 }
 .user-row:last-child { border-bottom: none; padding-bottom: 0; }
+.user-avatar-img {
+  width: 80rpx; height: 80rpx; border-radius: 20rpx; flex-shrink: 0; object-fit: cover;
+}
 .user-avatar-txt {
   width: 80rpx; height: 80rpx; border-radius: 20rpx; flex-shrink: 0;
   background: linear-gradient(135deg, #0F1F5C, #2563EB);

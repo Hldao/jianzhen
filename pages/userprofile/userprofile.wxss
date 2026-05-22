@@ -1,0 +1,93 @@
+page {
+  background: #EEF1F8;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+  --primary: #FF6B35; --text: #1A1A2E; --text-mid: #64748B;
+  --border: #E8ECF2; --white: #fff; --radius: 28rpx;
+}
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(255,255,255,.95); border-bottom: 1rpx solid var(--border);
+}
+.navbar-inner {
+  display: flex; align-items: center; justify-content: space-between; padding: 0 24rpx;
+}
+.nb-back { display: flex; align-items: center; padding: 0 16rpx; }
+.nb-back-icon { font-size: 52rpx; color: var(--text); line-height: 1; }
+.nb-title { font-size: 32rpx; font-weight: 700; color: var(--text); }
+
+.page-body { position: fixed; left: 0; right: 0; bottom: 0; overflow: hidden; }
+.bottom-safe { height: 48rpx; }
+
+/* ── 骨架 ─────────────────────────────────────────── */
+.skeleton-wrap { padding: 24rpx; }
+.sk-hero { background: #fff; border-radius: var(--radius); padding: 48rpx; text-align: center; margin-bottom: 16rpx; }
+.sk-avatar { width: 120rpx; height: 120rpx; border-radius: 50%; background: #E8ECF2; margin: 0 auto 20rpx; }
+.sk-name { width: 160rpx; height: 32rpx; border-radius: 8rpx; background: #E8ECF2; margin: 0 auto 16rpx; }
+.sk-sub  { width: 100rpx; height: 24rpx; border-radius: 8rpx; background: #E8ECF2; margin: 0 auto; }
+.sk-stats-row { display: flex; gap: 16rpx; background: #fff; border-radius: var(--radius); padding: 32rpx; }
+.sk-stat { flex: 1; height: 80rpx; border-radius: 16rpx; background: #E8ECF2; }
+
+/* ── 用户主卡 ──────────────────────────────────────── */
+.hero-card {
+  background: #fff; border-radius: var(--radius);
+  margin: 24rpx 24rpx 16rpx;
+  padding: 48rpx 32rpx 40rpx;
+  display: flex; flex-direction: column; align-items: center;
+  box-shadow: 0 4rpx 20rpx rgba(0,0,0,.06);
+}
+.up-avatar {
+  width: 120rpx; height: 120rpx; border-radius: 50%;
+  background: var(--primary); margin-bottom: 20rpx;
+  object-fit: cover;
+}
+.up-avatar-txt {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 48rpx; color: #fff;
+}
+.up-name { font-size: 36rpx; font-weight: 800; color: var(--text); margin-bottom: 16rpx; }
+.up-level-row { display: flex; gap: 12rpx; align-items: center; flex-wrap: wrap; justify-content: center; }
+.up-level-badge {
+  background: rgba(255,107,53,.1); color: var(--primary);
+  font-size: 22rpx; font-weight: 600;
+  padding: 6rpx 20rpx; border-radius: 20rpx;
+}
+.up-club-badge {
+  background: rgba(99,102,241,.1); color: #6366F1;
+  font-size: 22rpx; font-weight: 600;
+  padding: 6rpx 20rpx; border-radius: 20rpx;
+}
+
+/* ── 数据统计 ──────────────────────────────────────── */
+.stats-card {
+  background: #fff; border-radius: var(--radius);
+  margin: 0 24rpx 16rpx;
+  padding: 32rpx;
+  display: flex; align-items: center;
+  box-shadow: 0 4rpx 20rpx rgba(0,0,0,.06);
+}
+.stat-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8rpx; }
+.stat-num  { font-size: 40rpx; font-weight: 800; color: var(--text); }
+.stat-label{ font-size: 22rpx; color: var(--text-mid); }
+.stat-divider { width: 1rpx; height: 60rpx; background: var(--border); }
+
+/* ── 近期训练 ──────────────────────────────────────── */
+.section-card {
+  background: #fff; border-radius: var(--radius);
+  margin: 0 24rpx 16rpx; padding: 32rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0,0,0,.06);
+}
+.section-title { font-size: 28rpx; font-weight: 700; color: var(--text); display: block; margin-bottom: 24rpx; }
+.empty-tip { text-align: center; color: var(--text-mid); font-size: 26rpx; padding: 32rpx 0; }
+.feed-row {
+  display: flex; align-items: center;
+  padding: 20rpx 0; border-bottom: 1rpx solid var(--border);
+  flex-wrap: wrap; gap: 8rpx;
+}
+.feed-row:last-child { border-bottom: none; }
+.fr-left { flex: 1; display: flex; flex-direction: column; gap: 6rpx; }
+.fr-mode { font-size: 26rpx; font-weight: 600; color: var(--text); }
+.fr-meta { font-size: 22rpx; color: var(--text-mid); }
+.fr-right { display: flex; align-items: baseline; gap: 4rpx; margin-right: 16rpx; }
+.fr-score { font-size: 40rpx; font-weight: 800; color: var(--primary); }
+.fr-unit  { font-size: 22rpx; color: var(--text-mid); }
+.fr-time  { font-size: 22rpx; color: var(--text-mid); width: 100%; text-align: right; margin-top: -8rpx; }

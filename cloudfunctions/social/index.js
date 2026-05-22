@@ -22,6 +22,8 @@ exports.main = async (event, context) => {
     case 'createClub':       return createClub(OPENID, event.data || {})
     case 'likePost':         return likePost(OPENID, event.feedId)
     case 'unlikePost':       return unlikePost(OPENID, event.feedId)
+    case 'getUserProfile':   return getUserProfile(OPENID, event.targetOpenid)
+    case 'getClubDetail':    return getClubDetail(OPENID, event.clubId)
     default:                 return { code: 400, msg: 'unknown action' }
   }
 }
@@ -64,6 +66,7 @@ async function getPublicFeed(openid, opts = {}) {
 
   const feed = feedRes.data.map(item => ({
     ...item,
+    openid: item._openid,   // 供前端 data-openid 绑定（不含下划线更安全）
     isMine: item._openid === openid,
     liked:  likedSet.has(item._id),
     likes:  item.likes || 0,
@@ -252,4 +255,91 @@ async function unlikePost(openid, feedId) {
     }),
   ])
   return { code: 0 }
+}
+
+// ── 查看他人公开主页 ───────────────────────────────────────────────
+async function getUserProfile(openid, targetOpenid) {
+  if (!targetOpenid) return { code: 400, msg: 'targetOpenid required' }
+
+  const [userRes, countRes] = await Promise.all([
+    db.collection('users')
+      .where({ _openid: targetOpenid })
+      .field({ nickName: true, avatarUrl: true, bowType: true, trainDist: true, club: true })
+      .get(),
+    db.collection('training_records').where({ _openid: targetOpenid }).count(),
+  ])
+
+  if (!userRes.data.length) return { code: 404, msg: '用户不存在' }
+  const u = userRes.data[0]
+
+  const feedRes = await db.collection('social_feed')
+    .where({ _openid: targetOpenid })
+    .orderBy('ts', 'desc')
+    .limit(5)
+    .get()
+
+  return {
+    code: 0,
+    isSelf: openid === targetOpenid,
+    user: {
+      openid:    targetOpenid,
+      nickName:  u.nickName  || '箭证用户',
+      avatarUrl: u.avatarUrl || '',
+      bowType:   u.bowType   || '',
+      trainDist: u.trainDist || '',
+      club:      u.club      || '',
+    },
+    totalSessions: countRes.total,
+    recentFeed: feedRes.data,
+  }
+}
+
+// ── 俱乐部详情 ────────────────────────────────────────────────────
+async function getClubDetail(openid, clubId) {
+  if (!clubId) return { code: 400, msg: 'clubId required' }
+
+  const [clubRes, membersRes, joinedRes] = await Promise.all([
+    db.collection('clubs').doc(clubId).get(),
+    db.collection('club_members')
+      .where({ clubId })
+      .orderBy('joinedAt', 'asc')
+      .limit(30)
+      .get(),
+    db.collection('club_members').where({ _openid: openid, clubId }).count(),
+  ])
+
+  const club = clubRes.data
+  const memberOpenids = membersRes.data.map(m => m._openid)
+  let members = []
+
+  if (memberOpenids.length > 0) {
+    const usersRes = await db.collection('users')
+      .where({ _openid: _.in(memberOpenids) })
+      .field({ _openid: true, nickName: true, avatarUrl: true, bowType: true })
+      .get()
+    const userMap = {}
+    for (const u of usersRes.data) userMap[u._openid] = u
+    members = membersRes.data.map(m => ({
+      openid:    m._openid,
+      joinedAt:  m.joinedAt,
+      nickName:  userMap[m._openid]?.nickName  || '箭证用户',
+      avatarUrl: userMap[m._openid]?.avatarUrl || '',
+      bowType:   userMap[m._openid]?.bowType   || '',
+      isCreator: m._openid === club.creatorOpenid,
+    }))
+  }
+
+  return {
+    code: 0,
+    club: {
+      _id:         clubId,
+      name:        club.name,
+      city:        club.city        || '',
+      memberCount: club.memberCount || 0,
+      createdAt:   club.createdAt,
+      isCreator:   club.creatorOpenid === openid,
+    },
+    members,
+    isJoined:  joinedRes.total > 0,
+  }
 }

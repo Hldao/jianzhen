@@ -1,0 +1,90 @@
+<!-- 导航栏 -->
+<view class="navbar" style="padding-top:{{statusBarHeight}}px;">
+  <view class="navbar-inner" style="height:{{navBarHeight}}px;">
+    <view class="nb-back" bindtap="goBack"><text class="nb-back-icon">‹</text></view>
+    <text class="nb-title">箭友主页</text>
+    <view style="width:64rpx;"></view>
+  </view>
+</view>
+
+<scroll-view
+  scroll-y enhanced show-scrollbar="{{false}}"
+  class="page-body"
+  style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);"
+>
+
+  <!-- 加载骨架 -->
+  <view wx:if="{{loading}}" class="skeleton-wrap">
+    <view class="sk-hero">
+      <view class="sk-avatar"></view>
+      <view class="sk-name"></view>
+      <view class="sk-sub"></view>
+    </view>
+    <view class="sk-stats-row">
+      <view class="sk-stat" wx:for="{{[1,2,3]}}" wx:key="*this"></view>
+    </view>
+  </view>
+
+  <!-- 用户信息 -->
+  <block wx:elif="{{user}}">
+    <view class="hero-card">
+      <image
+        wx:if="{{user.avatarUrl}}"
+        class="up-avatar"
+        src="{{user.avatarUrl}}"
+        mode="aspectFill"
+      ></image>
+      <view wx:else class="up-avatar up-avatar-txt">
+        <text>{{user.nickName[0]}}</text>
+      </view>
+      <text class="up-name">{{user.nickName}}</text>
+      <view class="up-level-row">
+        <view class="up-level-badge">{{levelLabel}}</view>
+        <view wx:if="{{user.club}}" class="up-club-badge">{{user.club}}</view>
+      </view>
+    </view>
+
+    <!-- 数据统计 -->
+    <view class="stats-card">
+      <view class="stat-item">
+        <text class="stat-num">{{totalSessions}}</text>
+        <text class="stat-label">训练次数</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-num">{{user.bowType || '--'}}</text>
+        <text class="stat-label">弓种</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-num">{{user.trainDist || '--'}}</text>
+        <text class="stat-label">常训距离</text>
+      </view>
+    </view>
+
+    <!-- 近期训练 -->
+    <view class="section-card">
+      <text class="section-title">近期训练</text>
+      <view wx:if="{{recentFeed.length === 0}}" class="empty-tip">
+        <text>暂无训练记录</text>
+      </view>
+      <view
+        wx:for="{{recentFeed}}"
+        wx:key="_id"
+        class="feed-row"
+      >
+        <view class="fr-left">
+          <text class="fr-mode">{{item.modeLabel}}</text>
+          <text class="fr-meta">{{item.distance}} · {{item.totalArrows}}支</text>
+        </view>
+        <view class="fr-right">
+          <text class="fr-score">{{item.totalScore}}</text>
+          <text class="fr-unit">环</text>
+        </view>
+        <text class="fr-time">{{item.timeLabel}}</text>
+      </view>
+    </view>
+  </block>
+
+  <view class="bottom-safe"></view>
+</scroll-view>

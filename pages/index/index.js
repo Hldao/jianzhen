@@ -170,9 +170,15 @@ Page({
       this.getTabBar().setData({ selected: 0 })
     }
     this._checkPrivacy()
+
+    // 立即用本地缓存填充，避免白屏
+    const cached = wx.getStorageSync('training_history') || []
+    if (cached.length > 0) this.setData(computeHomeData(cached))
+
     try {
       const api = require('../../utils/cloud')
-      const res = await api.training.list({ limit: 200 })
+      const res = await api.training.list({ limit: 60 })
+      wx.setStorageSync('training_history', res.records)
       this.setData(computeHomeData(res.records))
 
       // 同步拉取未读通知数（用于底部 tab 徽章）
@@ -313,8 +319,12 @@ Page({
   },
 
   async openFeedDetail(e) {
-    const { id, isMine } = e.currentTarget.dataset
-    if (!isMine || !id) return
+    const { id, isMine, openid } = e.currentTarget.dataset
+    if (!isMine) {
+      if (openid) wx.navigateTo({ url: `/pages/userprofile/userprofile?openid=${openid}` })
+      return
+    }
+    if (!id) return
     try {
       wx.showLoading({ title: '加载中…', mask: true })
       const api = require('../../utils/cloud')

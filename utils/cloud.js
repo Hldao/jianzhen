@@ -91,8 +91,11 @@ const social = {
   leaveClub:        (data)   => call('social', 'leaveClub',   data),
   createClub:       (data)   => call('social', 'createClub',  { data }),
   // 点赞
-  likePost:         (feedId) => call('social', 'likePost',    { feedId }),
-  unlikePost:       (feedId) => call('social', 'unlikePost',  { feedId }),
+  likePost:         (feedId) => call('social', 'likePost',          { feedId }),
+  unlikePost:       (feedId) => call('social', 'unlikePost',        { feedId }),
+  // 用户主页 / 俱乐部详情
+  getUserProfile:   (opts)   => call('social', 'getUserProfile',    opts),
+  getClubDetail:    (opts)   => call('social', 'getClubDetail',     opts),
 }
 
 module.exports = { user, training, event, goal, social }

@@ -119,5 +119,15 @@ Page({
     }
   },
 
+  goUserProfile(e) {
+    const { openid } = e.currentTarget.dataset
+    if (openid) wx.navigateTo({ url: `/pages/userprofile/userprofile?openid=${openid}` })
+  },
+
+  goClubDetail(e) {
+    const { id } = e.currentTarget.dataset
+    if (id) wx.navigateTo({ url: `/pages/clubdetail/clubdetail?id=${id}` })
+  },
+
   noop() {},
 })

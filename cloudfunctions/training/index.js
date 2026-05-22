@@ -50,6 +50,13 @@ async function save(openid, record) {
     }
   })
 
+  // 查询用户所属俱乐部，用于动态标签
+  const userRes = await db.collection('users')
+    .where({ _openid: openid })
+    .field({ clubId: true })
+    .get()
+  const sourceType = (userRes.data[0] && userRes.data[0].clubId) ? 'club' : ''
+
   // 向 social_feed 写入一条动态，供箭友看到
   await db.collection('social_feed').add({
     data: {
@@ -63,6 +70,7 @@ async function save(openid, record) {
       mode:       data.mode,
       note:       data.note ?? '',
       likes:      0,
+      sourceType,
       createdAt:  db.serverDate(),
     }
   })

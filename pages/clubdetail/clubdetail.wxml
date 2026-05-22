@@ -1,0 +1,86 @@
+<!-- 导航栏 -->
+<view class="navbar" style="padding-top:{{statusBarHeight}}px;">
+  <view class="navbar-inner" style="height:{{navBarHeight}}px;">
+    <view class="nb-back" bindtap="goBack"><text class="nb-back-icon">‹</text></view>
+    <text class="nb-title">俱乐部</text>
+    <view style="width:64rpx;"></view>
+  </view>
+</view>
+
+<scroll-view
+  scroll-y enhanced show-scrollbar="{{false}}"
+  class="page-body"
+  style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);"
+>
+
+  <!-- 加载骨架 -->
+  <view wx:if="{{loading}}" class="skeleton-wrap">
+    <view class="sk-hero">
+      <view class="sk-club-icon"></view>
+      <view class="sk-name"></view>
+      <view class="sk-sub"></view>
+    </view>
+  </view>
+
+  <block wx:elif="{{club}}">
+    <!-- 俱乐部头部 -->
+    <view class="club-hero">
+      <view class="ch-icon">
+        <text class="ch-letter">{{club.name[0]}}</text>
+      </view>
+      <text class="ch-name">{{club.name}}</text>
+      <view class="ch-meta-row">
+        <view wx:if="{{club.city}}" class="ch-tag">{{club.city}}</view>
+        <view class="ch-tag">{{club.memberCount}}名成员</view>
+      </view>
+      <view
+        wx:if="{{!club.isCreator}}"
+        class="ch-join-btn {{isJoined ? 'ch-join-done' : ''}} {{joining ? 'ch-join-loading' : ''}}"
+        bindtap="toggleJoin"
+      >
+        <text>{{joining ? '处理中…' : isJoined ? '✓ 已加入' : '+ 加入俱乐部'}}</text>
+      </view>
+      <view wx:else class="ch-creator-tag">创建者</view>
+    </view>
+
+    <!-- 成员列表 -->
+    <view class="section-card">
+      <view class="section-hd">
+        <text class="section-title">成员</text>
+        <text class="section-sub">{{club.memberCount}}人</text>
+      </view>
+
+      <view wx:if="{{members.length === 0}}" class="empty-tip">
+        <text>暂无成员信息</text>
+      </view>
+
+      <view
+        wx:for="{{members}}"
+        wx:key="openid"
+        class="member-row"
+        bindtap="goUserProfile"
+        data-openid="{{item.openid}}"
+      >
+        <image
+          wx:if="{{item.avatarUrl}}"
+          class="member-avatar member-avatar-img"
+          src="{{item.avatarUrl}}"
+          mode="aspectFill"
+        ></image>
+        <view wx:else class="member-avatar member-avatar-txt">
+          <text>{{item.nickName[0]}}</text>
+        </view>
+        <view class="member-info">
+          <view class="member-name-row">
+            <text class="member-name">{{item.nickName}}</text>
+            <view wx:if="{{item.isCreator}}" class="creator-badge">创建者</view>
+          </view>
+          <text wx:if="{{item.bowType}}" class="member-sub">{{item.bowType}}</text>
+        </view>
+        <view class="member-arrow">›</view>
+      </view>
+    </view>
+  </block>
+
+  <view class="bottom-safe"></view>
+</scroll-view>

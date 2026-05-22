@@ -1,0 +1,96 @@
+page {
+  background: #EEF1F8;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+  --primary: #FF6B35; --text: #1A1A2E; --text-mid: #64748B;
+  --border: #E8ECF2; --white: #fff; --radius: 28rpx;
+}
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(255,255,255,.95); border-bottom: 1rpx solid var(--border);
+}
+.navbar-inner {
+  display: flex; align-items: center; justify-content: space-between; padding: 0 24rpx;
+}
+.nb-back { display: flex; align-items: center; padding: 0 16rpx; }
+.nb-back-icon { font-size: 52rpx; color: var(--text); line-height: 1; }
+.nb-title { font-size: 32rpx; font-weight: 700; color: var(--text); }
+
+.page-body { position: fixed; left: 0; right: 0; bottom: 0; overflow: hidden; }
+.bottom-safe { height: 48rpx; }
+
+/* ── 骨架 ─────────────────────────────────────────── */
+.skeleton-wrap { padding: 24rpx; }
+.sk-hero { background: #fff; border-radius: var(--radius); padding: 48rpx; text-align: center; }
+.sk-club-icon { width: 120rpx; height: 120rpx; border-radius: 32rpx; background: #E8ECF2; margin: 0 auto 20rpx; }
+.sk-name { width: 200rpx; height: 36rpx; border-radius: 8rpx; background: #E8ECF2; margin: 0 auto 16rpx; }
+.sk-sub  { width: 120rpx; height: 24rpx; border-radius: 8rpx; background: #E8ECF2; margin: 0 auto; }
+
+/* ── 俱乐部头部 ────────────────────────────────────── */
+.club-hero {
+  background: linear-gradient(135deg, #1E3A8A, #2563EB);
+  margin: 24rpx 24rpx 16rpx;
+  border-radius: var(--radius);
+  padding: 48rpx 32rpx 40rpx;
+  display: flex; flex-direction: column; align-items: center;
+  box-shadow: 0 8rpx 32rpx rgba(37,99,235,.3);
+}
+.ch-icon {
+  width: 120rpx; height: 120rpx; border-radius: 32rpx;
+  background: rgba(255,255,255,.2);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 20rpx;
+}
+.ch-letter { font-size: 56rpx; font-weight: 900; color: #fff; }
+.ch-name   { font-size: 40rpx; font-weight: 900; color: #fff; margin-bottom: 16rpx; }
+.ch-meta-row { display: flex; gap: 12rpx; margin-bottom: 32rpx; }
+.ch-tag {
+  background: rgba(255,255,255,.2); color: rgba(255,255,255,.9);
+  font-size: 22rpx; padding: 6rpx 20rpx; border-radius: 20rpx;
+}
+.ch-join-btn {
+  background: #fff; color: var(--primary);
+  font-size: 28rpx; font-weight: 700;
+  padding: 18rpx 48rpx; border-radius: 24rpx;
+}
+.ch-join-done { background: rgba(255,255,255,.2); color: rgba(255,255,255,.9); }
+.ch-join-loading { opacity: .6; }
+.ch-creator-tag {
+  background: rgba(255,107,53,.3); color: #FFB347;
+  font-size: 24rpx; font-weight: 600;
+  padding: 8rpx 28rpx; border-radius: 20rpx;
+}
+
+/* ── 成员列表 ──────────────────────────────────────── */
+.section-card {
+  background: #fff; border-radius: var(--radius);
+  margin: 0 24rpx 16rpx; padding: 32rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0,0,0,.06);
+}
+.section-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24rpx; }
+.section-title { font-size: 28rpx; font-weight: 700; color: var(--text); }
+.section-sub   { font-size: 24rpx; color: var(--text-mid); }
+.empty-tip { text-align: center; color: var(--text-mid); font-size: 26rpx; padding: 32rpx 0; }
+
+.member-row {
+  display: flex; align-items: center;
+  padding: 20rpx 0; border-bottom: 1rpx solid var(--border);
+}
+.member-row:last-child { border-bottom: none; }
+.member-avatar {
+  width: 80rpx; height: 80rpx; border-radius: 50%;
+  background: var(--primary); margin-right: 20rpx; flex-shrink: 0;
+}
+.member-avatar-img { object-fit: cover; }
+.member-avatar-txt {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32rpx; color: #fff; font-weight: 700;
+}
+.member-info { flex: 1; }
+.member-name-row { display: flex; align-items: center; gap: 12rpx; margin-bottom: 6rpx; }
+.member-name { font-size: 28rpx; font-weight: 600; color: var(--text); }
+.creator-badge {
+  background: rgba(255,107,53,.1); color: var(--primary);
+  font-size: 20rpx; font-weight: 600; padding: 4rpx 14rpx; border-radius: 12rpx;
+}
+.member-sub  { font-size: 22rpx; color: var(--text-mid); }
+.member-arrow { font-size: 36rpx; color: var(--border); margin-left: 8rpx; }

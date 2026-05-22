@@ -14,7 +14,9 @@
     "pages/myevents/myevents",
     "pages/publisher/publisher",
     "pages/createevent/createevent",
-    "pages/regmanage/regmanage"
+    "pages/regmanage/regmanage",
+    "pages/userprofile/userprofile",
+    "pages/clubdetail/clubdetail"
   ],
   "__usePrivacyCheck__": true,
   "window": {
