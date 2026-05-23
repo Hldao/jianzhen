@@ -333,6 +333,12 @@ app.globalData.navBarHeight
 ### 15. 云函数错误兜底
 `social/index.js` 顶层 try/catch 把异常包成 `{ code: 500, msg, stack }` 返回，前端能直接 Console 看到，不被静默吞掉。其他云函数尚未统一，是已知技术债。
 
+### 16. 隐私协议涉及的接口边界
+微信审核会扫描代码识别敏感接口，未上线功能里的敏感调用也要回避。当前主流程涉及：
+- `wx.saveImageToPhotosAlbum`（detail.js 分享卡保存到相册）→ 协议须写「相册（仅写入）」
+- `open-type="chooseAvatar"` + `type="nickname"`（profile.wxml）→ 协议须写「微信昵称、头像」
+- `wx.chooseMedia`（createevent.js，赛事系统未上线）→ 已注释，上线赛事时再恢复并补协议条目
+
 ---
 
 ## 当前开发状态（2026-05-22）

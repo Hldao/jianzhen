@@ -39,12 +39,15 @@ Page({
   },
 
   chooseCover() {
-    wx.chooseMedia({
-      count: 1, mediaType: ['image'], sourceType: ['album', 'camera'],
-      success: res => {
-        this.setData({ 'form.cover': res.tempFiles[0].tempFilePath })
-      },
-    })
+    // 赛事系统未上线，封面图选择功能暂时禁用，避免微信隐私协议要求填写"选中的照片或视频"
+    // 上线时恢复以下逻辑：
+    // wx.chooseMedia({
+    //   count: 1, mediaType: ['image'], sourceType: ['album', 'camera'],
+    //   success: res => {
+    //     this.setData({ 'form.cover': res.tempFiles[0].tempFilePath })
+    //   },
+    // })
+    wx.showToast({ title: '功能暂未开放', icon: 'none' })
   },
 
   pickDate(e) {
