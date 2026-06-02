@@ -12,7 +12,6 @@
 <!-- Tab 栏 -->
 <view class="notif-tabs" style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);">
   <view class="notif-tab {{activeTab==='all'   ?'nt-active':''}}" bindtap="switchTab" data-tab="all">全部</view>
-  <view class="notif-tab {{activeTab==='event' ?'nt-active':''}}" bindtap="switchTab" data-tab="event">赛事</view>
   <view class="notif-tab {{activeTab==='club'  ?'nt-active':''}}" bindtap="switchTab" data-tab="club">俱乐部</view>
   <view class="notif-tab {{activeTab==='system'?'nt-active':''}}" bindtap="switchTab" data-tab="system">系统</view>
 </view>
@@ -39,7 +38,7 @@
   <view wx:elif="{{filtered.length === 0}}" class="empty-state">
     <text class="es-icon">🔔</text>
     <text class="es-title">暂无通知</text>
-    <text class="es-desc">赛事报名、系统消息\n都会在这里通知你</text>
+    <text class="es-desc">俱乐部、系统消息\n都会在这里通知你</text>
   </view>
 
   <!-- 通知列表 -->
@@ -53,7 +52,7 @@
       data-index="{{index}}"
     >
       <view class="notif-icon-wrap notif-icon-{{item.type}}">
-        <text class="ni-emoji">{{item.type === 'event' ? '🏆' : item.type === 'club' ? '🏹' : 'ℹ️'}}</text>
+        <text class="ni-emoji">{{item.type === 'club' ? '🏹' : 'ℹ️'}}</text>
       </view>
       <view class="notif-content">
         <text class="notif-title">{{item.title}}</text>

@@ -50,12 +50,6 @@
         <text class="ps-num">{{bestScore || '--'}}</text>
         <text class="ps-label">最高环</text>
       </view>
-      <!-- 参赛次数：等待赛事系统上线后启用
-      <view class="ps-item">
-        <text class="ps-num">{{eventCount}}</text>
-        <text class="ps-label">参赛次数</text>
-      </view>
-      -->
     </view>
   </view>
 
@@ -115,19 +109,6 @@
 
   <!-- ── 功能菜单 ── -->
   <view class="menu-list">
-    <!-- 我的报名：等待赛事系统上线后启用
-    <view class="menu-item" bindtap="openMyEvents">
-      <view class="menu-icon" style="background:linear-gradient(135deg,#FF6B35,#FF8F5E);">
-        <view class="lc lc-md lc-white lc-medal"></view>
-      </view>
-      <text class="menu-label">我的报名</text>
-      <view wx:if="{{eventCount > 0}}" class="menu-badge">
-        <text>{{eventCount}}场</text>
-      </view>
-      <view class="lc lc-sm lc-gray lc-chevron-right"></view>
-    </view>
-    <view class="menu-divider"></view>
-    -->
     <view class="menu-item" bindtap="editProfile">
       <view class="menu-icon" style="background:linear-gradient(135deg,#6366F1,#818CF8);">
         <view class="lc lc-md lc-white lc-user"></view>

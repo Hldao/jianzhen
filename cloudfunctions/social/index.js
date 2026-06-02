@@ -87,7 +87,7 @@ async function getPublicFeed(openid, opts = {}) {
   return { code: 0, feed, hasMore: feed.length === limit }
 }
 
-// ── 未读通知数（赛事报名等系统通知用） ────────────────────────────
+// ── 未读通知数 ────────────────────────────────────────────────────
 async function getUnreadCount(openid) {
   const res = await db.collection('notifications')
     .where({ _openid: openid, read: false })

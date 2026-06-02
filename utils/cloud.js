@@ -45,24 +45,6 @@ const training = {
   migrate:  (records)=> call('training', 'migrate', { records }),
 }
 
-// ── 赛事 ──────────────────────────────────────────────────────────
-const event = {
-  // 列表，filters: { status, keyword, limit, skip }
-  list:                (filters) => call('events', 'list',               { filters }),
-  // 单条详情
-  getOne:              (id)      => call('events', 'getOne',             { id }),
-  // 报名，data: { eventId, category, realName, phone, idType, idNumber, club }
-  register:            (data)    => call('events', 'register',           { data }),
-  // 取消报名
-  cancelReg:           (regId)   => call('events', 'cancelReg',         { regId }),
-  // 我的报名列表
-  getMyRegistrations:  ()        => call('events', 'myRegs'),
-  // 创建赛事（赛事方）
-  create:              (data)    => call('events', 'create',             { data }),
-  // 更新赛事状态（赛事方）
-  updateStatus:        (id, s)   => call('events', 'updateStatus',      { id, status: s }),
-}
-
 // ── 训练目标 ──────────────────────────────────────────────────────
 const goal = {
   // 获取目标（含最高分、进度百分比）
@@ -97,4 +79,4 @@ const social = {
   getClubDetail:    (opts)   => call('social', 'getClubDetail',     opts),
 }
 
-module.exports = { user, training, event, goal, social }
+module.exports = { user, training, goal, social }

@@ -36,13 +36,12 @@ async function login(openid) {
       avatarUrl:    '',
       phone:        '',
       bio:          '',
-      isOrganizer:  false,
       clubId:       '',
       createdAt:    db.serverDate(),
     }
   })
 
-  const newUser = { _id: res._id, _openid: openid, nickName: '箭证新人', isOrganizer: false }
+  const newUser = { _id: res._id, _openid: openid, nickName: '箭证新人' }
   return { code: 0, user: newUser, isNew: true }
 }
 
@@ -72,10 +71,9 @@ async function updateProfile(openid, updates) {
 
 // ── 综合统计（训练次数、最高分、箭友数） ─────────────────────────
 async function getStats(openid) {
-  const [recRes, goalRes, regRes, followRes] = await Promise.all([
+  const [recRes, goalRes, followRes] = await Promise.all([
     db.collection('training_records').where({ _openid: openid }).count(),
     db.collection('user_goals').where({ _openid: openid }).limit(1).get(),
-    db.collection('event_registrations').where({ _openid: openid }).count(),
     db.collection('follows').where({ _openid: openid }).count(),
   ])
 
@@ -91,7 +89,6 @@ async function getStats(openid) {
     code: 0,
     totalSessions:  recRes.total,
     bestScore:      bestRes.data[0]?.totalScore ?? 0,
-    eventCount:     regRes.total,
     friendCount:    followRes.total,
     goal:           goalRes.data[0] ?? null,
   }

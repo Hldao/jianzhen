@@ -15,7 +15,6 @@
 | `avatarUrl`    | string  | 头像 URL（云存储路径）        |
 | `phone`        | string  | 手机号（可选）                |
 | `bio`          | string  | 个人简介                     |
-| `isOrganizer`  | boolean | 是否为赛事方，默认 false      |
 | `clubId`       | string  | 所属俱乐部 _id，可选          |
 | `createdAt`    | date    | 注册时间                     |
 
@@ -64,59 +63,7 @@
 
 ---
 
-### 4. `events` — 赛事信息
-| 字段                   | 类型    | 说明                              |
-|-----------------------|---------|-----------------------------------|
-| `_openid`             | string  | 创建者（赛事方）openid             |
-| `title`               | string  | 赛事名称                          |
-| `organizer`           | string  | 主办方名称                        |
-| `location`            | string  | 比赛地点                          |
-| `startDate`           | string  | 开始日期（显示用）                 |
-| `endDate`             | string  | 结束日期（显示用）                 |
-| `startTimestamp`      | number  | 开始时间戳（用于排序）             |
-| `regEnd`              | string  | 报名截止日期                       |
-| `fee`                 | number  | 报名费（元）                       |
-| `maxParticipants`     | number  | 最大报名人数                       |
-| `currentParticipants` | number  | 当前报名人数                       |
-| `status`              | string  | registration_open/registration_closed/full/ended |
-| `featured`            | boolean | 是否精选展示                       |
-| `categories`          | array   | 竞赛项目列表                       |
-| `schedule`            | array   | 赛程 [{date, time, item}]          |
-| `contacts`            | array   | 联系人 [{name, phone, role}]       |
-| `createdAt`           | date    |                                   |
-
-**索引**：
-- `status + startTimestamp`（列表筛选 + 排序）
-- `featured`（精选查询）
-
-**权限**：所有人可读，只有创建者可写（云函数端已鉴权）
-
----
-
-### 5. `event_registrations` — 报名记录
-| 字段                | 类型   | 说明                          |
-|--------------------|--------|-------------------------------|
-| `_openid`          | string | 报名用户 openid               |
-| `eventId`          | string | 赛事 _id                      |
-| `eventTitle`       | string | 赛事名称（冗余，避免联表查询）  |
-| `category`         | string | 参赛项目                      |
-| `realName`         | string | 真实姓名                      |
-| `phone`            | string | 联系电话                      |
-| `idType`           | string | 证件类型：id_card/passport     |
-| `idNumber`         | string | 证件号码                      |
-| `club`             | string | 所属俱乐部（可选）             |
-| `fee`              | number | 应付费用                      |
-| `status`           | string | pending/confirmed/cancelled   |
-| `participantNumber`| string | 参赛号码（主办方填写）         |
-| `createdAt`        | date   |                               |
-
-**索引**：
-- `_openid + createdAt`（我的报名列表）
-- `eventId + status`（赛事方管理）
-
----
-
-### 6. `follows` — 关注关系
+### 4. `follows` — 关注关系
 | 字段          | 类型   | 说明             |
 |--------------|--------|------------------|
 | `_openid`    | string | 关注者 openid    |
@@ -130,7 +77,7 @@
 ### 7. `social_feed` — 箭友动态
 | 字段          | 类型   | 说明                    |
 |--------------|--------|-------------------------|
-| `_openid`    | string | 发布者 openid           |
+| `_openid`    | string | 动态作者 openid         |
 | `recordId`   | string | 关联的 training_records _id |
 | `ts`         | number | 训练时间戳（用于排序）   |
 | `bowType`    | string |                         |
@@ -185,11 +132,11 @@
 | 字段        | 类型    | 说明                              |
 |------------|---------|-----------------------------------|
 | `_openid`  | string  | 接收者 openid                     |
-| `type`     | string  | event / social / system           |
+| `type`     | string  | club / social / system            |
 | `title`    | string  | 通知标题                          |
 | `desc`     | string  | 通知内容                          |
 | `read`     | boolean | 是否已读                          |
-| `relatedId`| string  | 关联 ID（报名 _id / 用户 openid）  |
+| `relatedId`| string  | 关联 ID（俱乐部 _id / 用户 openid）|
 | `createdAt`| date    |                                   |
 
 **索引**：`_openid + read + createdAt`
@@ -205,8 +152,6 @@
 | users                 | 仅创建者可读写        |
 | training_records      | 仅创建者可读写        |
 | user_goals            | 仅创建者可读写        |
-| events                | 所有人可读，仅创建者写 |
-| event_registrations   | 仅创建者可读写        |
 | follows               | 仅创建者可读写        |
 | social_feed           | 所有人可读，仅创建者写 |
 | notifications         | 仅创建者可读写        |

@@ -6,8 +6,8 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
 
 const COLLECTIONS = [
-  'users', 'training_records', 'user_goals', 'events',
-  'event_registrations', 'follows', 'social_feed', 'notifications',
+  'users', 'training_records', 'user_goals',
+  'follows', 'social_feed', 'notifications',
   'feed_likes', 'clubs', 'club_members',
 ]
 

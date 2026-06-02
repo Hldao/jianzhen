@@ -143,7 +143,6 @@ Page({
 
     totalSessions: 0,
     bestScore: 0,
-    eventCount: 0,
     unreadCount: 0,
 
     achievements: [],
@@ -208,7 +207,6 @@ Page({
         streakDays: streak,
         totalSessions: sessions,
         bestScore: best,
-        eventCount: statsRes.eventCount,
         unreadCount: unreadRes.count || 0,
         achievements: buildAchievements(sessions, streak, wx.getStorageSync('achievement_golden_end') || null, wx.getStorageSync('achievement_perfect_end') || null),
       })
@@ -242,16 +240,8 @@ Page({
     wx.navigateTo({ url: '/pages/profile/profile' })
   },
 
-  openMyEvents() {
-    wx.navigateTo({ url: '/pages/myevents/myevents' })
-  },
-
   openNotifications() {
     wx.navigateTo({ url: '/pages/notification/notification' })
-  },
-
-  openPublisher() {
-    wx.navigateTo({ url: '/pages/publisher/publisher' })
   },
 
   openAbout() {

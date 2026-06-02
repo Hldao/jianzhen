@@ -68,16 +68,6 @@ miniprogram-1/
 | 俱乐部详情 | `pages/clubdetail/clubdetail` | 俱乐部信息 + 成员列表，加入/退出功能 |
 | 消息通知 | `pages/notification/notification` | 系统通知列表，支持标记已读 |
 
-### 赛事系统（待上线，代码已写，UI 已注释）
-
-| 页面 | 路径 | 状态 |
-|------|------|------|
-| 赛事列表 | `pages/events/events` | 已实现，等赛事系统上线后启用 |
-| 我的报名 | `pages/myevents/myevents` | 已实现，mine 页面入口已注释 |
-| 发布赛事 | `pages/publisher/publisher` | 赛事方发布页 |
-| 创建赛事 | `pages/createevent/createevent` | 赛事方创建表单 |
-| 报名管理 | `pages/regmanage/regmanage` | 赛事方报名管理 |
-
 ---
 
 ## 云函数清单
@@ -97,7 +87,7 @@ await api.social.createClub({ name, city })
 | `login` | 登录 / 首次创建用户文档 |
 | `getProfile` | 获取当前用户资料 |
 | `updateProfile` | 更新资料（allowedFields: nickName/avatarUrl/city/bowType/trainDist/club/clubId） |
-| `getStats` | 获取统计：totalSessions/bestScore/eventCount |
+| `getStats` | 获取统计：totalSessions/bestScore/friendCount |
 
 ### `training` 云函数
 
@@ -130,12 +120,8 @@ await api.social.createClub({ name, city })
 ### `init` 云函数（一次性运维工具）
 
 在微信开发者工具「云函数 → 在云端测试」中手动触发，用途：
-1. 创建全部 11 个数据库集合（已存在则跳过，幂等）
+1. 创建全部数据库集合（已存在则跳过，幂等）
 2. 将历史 `training_records` 回填到 `social_feed`（已有对应条目则跳过）
-
-### `events` 云函数（待上线）
-
-赛事发布、报名、取消报名、状态管理等，代码已完整实现。
 
 ### `goal` 云函数
 
@@ -152,8 +138,6 @@ await api.social.createClub({ name, city })
 | `users` | 用户资料 |
 | `training_records` | 训练记录 |
 | `user_goals` | 训练目标 |
-| `events` | 赛事信息 |
-| `event_registrations` | 报名记录 |
 | `social_feed` | 公开训练动态 |
 | `notifications` | 系统通知 |
 | `clubs` | 俱乐部信息（name/city/memberCount/creatorOpenid） |
@@ -334,10 +318,9 @@ app.globalData.navBarHeight
 `social/index.js` 顶层 try/catch 把异常包成 `{ code: 500, msg, stack }` 返回，前端能直接 Console 看到，不被静默吞掉。其他云函数尚未统一，是已知技术债。
 
 ### 16. 隐私协议涉及的接口边界
-微信审核会扫描代码识别敏感接口，未上线功能里的敏感调用也要回避。当前主流程涉及：
+微信审核会扫描代码识别敏感接口。当前主流程涉及：
 - `wx.saveImageToPhotosAlbum`（detail.js 分享卡保存到相册）→ 协议须写「相册（仅写入）」
 - `open-type="chooseAvatar"` + `type="nickname"`（profile.wxml）→ 协议须写「微信昵称、头像」
-- `wx.chooseMedia`（createevent.js，赛事系统未上线）→ 已注释，上线赛事时再恢复并补协议条目
 
 ---
 
@@ -363,13 +346,8 @@ app.globalData.navBarHeight
 - 数据库一键初始化 `init` 云函数（建集合 + 历史记录回填 social_feed）
 - 上线前体检：数据迁移幂等 / 点赞互斥锁 / 通知徽章清除 / 训练记录权限校验 / 长文本截断（5 处页面）
 
-### 等待上线 ⏳（代码已写，入口已注释）
-- 赛事系统（发布/报名/报名管理）
-  - 恢复方式：取消 mine.wxml 中"我的报名"的注释，tabs 里加回 events tab
-
 ### 待开发 📋
 - 社交关注功能（`follows` 集合已建，UI 未开发）
-- 赛事系统正式上线
 
 ### 手动运维步骤（新环境首次部署）
 1. 微信开发者工具上传并部署云函数：`user` / `training` / `social` / `goal` / `init`
