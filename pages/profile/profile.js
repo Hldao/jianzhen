@@ -107,6 +107,7 @@ Page({
   async selectClub(e) {
     const { name, id } = e.currentTarget.dataset
     const oldId = this.data.clubId
+    const oldName = this.data.club
     this.setData({ club: name, clubId: id, showClubSheet: false })
     try {
       const api = require('../../utils/cloud')
@@ -114,18 +115,24 @@ Page({
       await api.social.joinClub({ clubId: id })
     } catch (err) {
       console.warn('joinClub failed', err)
+      // 失败回滚 UI，避免本地状态与云端 club_members 不一致
+      this.setData({ club: oldName, clubId: oldId })
+      wx.showToast({ title: '操作失败，请重试', icon: 'none' })
     }
   },
 
   async clearClub() {
-    const id = this.data.clubId
+    const oldId = this.data.clubId
+    const oldName = this.data.club
     this.setData({ club: '', clubId: '' })
-    if (!id) return
+    if (!oldId) return
     try {
       const api = require('../../utils/cloud')
-      await api.social.leaveClub({ clubId: id })
+      await api.social.leaveClub({ clubId: oldId })
     } catch (err) {
       console.warn('leaveClub failed', err)
+      this.setData({ club: oldName, clubId: oldId })
+      wx.showToast({ title: '退出失败，请重试', icon: 'none' })
     }
   },
 

@@ -244,8 +244,9 @@ Page({
     }
 
     // ── Step 2：云端静默刷新
+    // 图表只用近期 30/90 天数据 + sessions slice(0,20)，60 条足够
     try {
-      const res = await api.training.list({ limit: 200 })
+      const res = await api.training.list({ limit: 60 })
       const cloudRecords = res.records || []
 
       // 保留刚完成但尚未同步的本地新记录
