@@ -16,6 +16,9 @@ function fmtTime(ts) {
 
 const MODE_LABEL = { ranking: '积分赛', elimination: '淘汰赛', custom: '自由练习' }
 
+// 用户主页 5 分钟缓存（globalData，跨页面共享）· 反复点同一用户不重复拉
+const PROFILE_CACHE_TTL = 5 * 60 * 1000
+
 Page({
   data: {
     statusBarHeight: 20,
@@ -38,11 +41,20 @@ Page({
   },
 
   async _load(openid) {
+    // 5 分钟缓存 · 用户主页不会快速变化，避免反复点同人重复云调用
+    const app = getApp()
+    app.globalData.userProfileCache = app.globalData.userProfileCache || {}
+    const cached = app.globalData.userProfileCache[openid]
+    if (cached && Date.now() - cached.ts < PROFILE_CACHE_TTL) {
+      this.setData({ ...cached.data, loading: false })
+      return
+    }
+
     try {
       const api = require('../../utils/cloud')
       const res = await api.social.getUserProfile({ targetOpenid: openid })
       if (res.code !== 0) { wx.navigateBack(); return }
-      this.setData({
+      const data = {
         user: res.user,
         levelLabel: levelLabel(res.totalSessions),
         totalSessions: res.totalSessions,
@@ -51,8 +63,9 @@ Page({
           modeLabel: MODE_LABEL[f.mode] || f.mode,
           timeLabel: fmtTime(f.ts),
         })),
-        loading: false,
-      })
+      }
+      this.setData({ ...data, loading: false })
+      app.globalData.userProfileCache[openid] = { ts: Date.now(), data }
     } catch (e) {
       wx.showToast({ title: '加载失败', icon: 'none' })
       this.setData({ loading: false })

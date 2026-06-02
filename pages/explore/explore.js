@@ -103,6 +103,10 @@ Page({
     else this._loadClubs(this.data.clubKeyword, true)
   },
 
+  onUnload() {
+    if (this._searchTimer) clearTimeout(this._searchTimer)
+  },
+
   onClubSearch(e) {
     const keyword = e.detail.value
     this.setData({ clubKeyword: keyword })

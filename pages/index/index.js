@@ -163,9 +163,13 @@ Page({
       _quoteShown = true
       const q = QUOTES[Math.floor(Math.random() * QUOTES.length)]
       this.setData({ showQuote: true, quoteText: q.text, quoteAuthor: q.author })
-      setTimeout(() => this.setData({ showQuote: false }), 4200)
+      this._quoteTimer = setTimeout(() => this.setData({ showQuote: false }), 4200)
     }
     this._checkPrivacy()
+  },
+
+  onUnload() {
+    if (this._quoteTimer) clearTimeout(this._quoteTimer)
   },
 
   async onShow() {
