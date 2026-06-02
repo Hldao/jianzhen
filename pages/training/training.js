@@ -654,9 +654,16 @@ Page({
     history.unshift(record)
     wx.setStorageSync('training_history', history)
 
-    // 同步到云端（异步，不阻塞导航）
+    // 同步到云端（异步，不阻塞导航；失败时给用户提示，本地已留底）
     const api = require('../../utils/cloud')
-    api.training.save(record).catch(e => console.error('云端同步失败', e))
+    api.training.save(record).catch(e => {
+      console.error('云端同步失败', e)
+      wx.showToast({
+        title: '云端同步失败，记录已存本地',
+        icon: 'none',
+        duration: 2500,
+      })
+    })
 
     wx.navigateBack()
   },

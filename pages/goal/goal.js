@@ -89,9 +89,17 @@ Page({
     wx.setStorageSync('training_goal', goal)
     try {
       const api = require('../../utils/cloud')
-      await api.user.saveGoal(goal)
+      await api.goal.set({
+        distance: goal.dist,
+        bowType: goal.bow,
+        targetScore: goal.score,
+        deadline: goal.deadline,
+      })
     } catch (e) {
       console.warn('saveGoal cloud failed', e)
+      wx.showToast({ title: '云端同步失败，本地已保存', icon: 'none', duration: 2000 })
+      setTimeout(() => wx.navigateBack(), 2200)
+      return
     }
     wx.showToast({ title: '目标已保存', icon: 'success' })
     setTimeout(() => wx.navigateBack(), 1200)

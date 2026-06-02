@@ -8,7 +8,15 @@ const _     = db.command
 exports.main = async (event, context) => {
   const { OPENID } = cloud.getWXContext()
   const { action }  = event
+  try {
+    return await dispatch(OPENID, action, event)
+  } catch (e) {
+    console.error('[training] action=' + action + ' failed:', e)
+    return { code: 500, msg: String(e && e.message || e), stack: String(e && e.stack || '') }
+  }
+}
 
+async function dispatch(OPENID, action, event) {
   switch (action) {
     case 'save':     return save(OPENID, event.record)
     case 'list':     return list(OPENID, event.opts)

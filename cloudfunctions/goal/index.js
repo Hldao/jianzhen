@@ -7,7 +7,15 @@ const db = cloud.database()
 exports.main = async (event, context) => {
   const { OPENID } = cloud.getWXContext()
   const { action }  = event
+  try {
+    return await dispatch(OPENID, action, event)
+  } catch (e) {
+    console.error('[goal] action=' + action + ' failed:', e)
+    return { code: 500, msg: String(e && e.message || e), stack: String(e && e.stack || '') }
+  }
+}
 
+async function dispatch(OPENID, action, event) {
   switch (action) {
     case 'get':      return getGoal(OPENID)
     case 'set':      return setGoal(OPENID, event.data)
