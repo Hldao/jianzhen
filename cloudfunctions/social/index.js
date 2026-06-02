@@ -122,11 +122,12 @@ async function markRead(openid, id) {
 
 // ── 发现用户：返回最近活跃的其他用户及其训练统计 ──────────────────
 async function listUsers(openid, opts = {}) {
-  const { limit = 30 } = opts
+  const { limit = 20, skip = 0 } = opts
 
   const res = await db.collection('users')
     .where({ _openid: _.neq(openid) })
     .orderBy('updatedAt', 'desc')
+    .skip(skip)
     .limit(limit)
     .field({ _openid: true, nickName: true, avatarUrl: true, sessionCount: true })
     .get()
@@ -309,12 +310,14 @@ async function getUserProfile(openid, targetOpenid) {
 async function getClubDetail(openid, clubId) {
   if (!clubId) return { code: 400, msg: 'clubId required' }
 
+  // 俱乐部成员列表限制 20 条（首批显示）
+  // 200+ 成员俱乐部全量拉取会塞爆 WebView；前端按需分页（TODO 加 loadMore）
   const [clubRes, membersRes, joinedRes] = await Promise.all([
     db.collection('clubs').doc(clubId).get(),
     db.collection('club_members')
       .where({ clubId })
       .orderBy('joinedAt', 'asc')
-      .limit(30)
+      .limit(20)
       .get(),
     db.collection('club_members').where({ _openid: openid, clubId }).count(),
   ])

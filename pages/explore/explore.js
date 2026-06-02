@@ -1,3 +1,5 @@
+const PAGE_SIZE = 20
+
 Page({
   data: {
     statusBarHeight: 20,
@@ -6,9 +8,15 @@ Page({
 
     users: [],
     usersLoading: true,
+    usersLoadingMore: false,
+    usersSkip: 0,
+    usersHasMore: true,
 
     clubs: [],
     clubsLoading: true,
+    clubsLoadingMore: false,
+    clubsSkip: 0,
+    clubsHasMore: true,
     clubKeyword: '',
 
     showCreateClub: false,
@@ -35,14 +43,28 @@ Page({
     wx.navigateBack()
   },
 
-  // ── 箭友列表 ────────────────────────────────────────────────────
-  async _loadUsers() {
+  // ── 箭友列表 · 分页上滑加载 ─────────────────────────────────────
+  async _loadUsers(append = false) {
+    if (append) {
+      if (this.data.usersLoadingMore || !this.data.usersHasMore) return
+      this.setData({ usersLoadingMore: true })
+    } else {
+      this.setData({ usersLoading: true, usersSkip: 0, usersHasMore: true })
+    }
     try {
       const api = require('../../utils/cloud')
-      const res = await api.social.listUsers({ limit: 30 })
-      this.setData({ users: res.users || [], usersLoading: false })
+      const skip = append ? this.data.usersSkip : 0
+      const res = await api.social.listUsers({ limit: PAGE_SIZE, skip })
+      const newUsers = res.users || []
+      this.setData({
+        users: append ? this.data.users.concat(newUsers) : newUsers,
+        usersSkip: (append ? this.data.usersSkip : 0) + newUsers.length,
+        usersHasMore: newUsers.length >= PAGE_SIZE,
+        usersLoading: false,
+        usersLoadingMore: false,
+      })
     } catch (e) {
-      this.setData({ usersLoading: false })
+      this.setData({ usersLoading: false, usersLoadingMore: false })
     }
   },
 
@@ -50,16 +72,35 @@ Page({
     wx.showShareMenu({ withShareTicket: true, menus: ['shareAppMessage'] })
   },
 
-  // ── 俱乐部 ──────────────────────────────────────────────────────
-  async _loadClubs(keyword = '') {
-    this.setData({ clubsLoading: true })
+  // ── 俱乐部 · 分页上滑加载 ────────────────────────────────────────
+  async _loadClubs(keyword = this.data.clubKeyword, append = false) {
+    if (append) {
+      if (this.data.clubsLoadingMore || !this.data.clubsHasMore) return
+      this.setData({ clubsLoadingMore: true })
+    } else {
+      this.setData({ clubsLoading: true, clubsSkip: 0, clubsHasMore: true })
+    }
     try {
       const api = require('../../utils/cloud')
-      const res = await api.social.listClubs({ keyword, limit: 20 })
-      this.setData({ clubs: res.clubs || [], clubsLoading: false })
+      const skip = append ? this.data.clubsSkip : 0
+      const res = await api.social.listClubs({ keyword, limit: PAGE_SIZE, skip })
+      const newClubs = res.clubs || []
+      this.setData({
+        clubs: append ? this.data.clubs.concat(newClubs) : newClubs,
+        clubsSkip: (append ? this.data.clubsSkip : 0) + newClubs.length,
+        clubsHasMore: newClubs.length >= PAGE_SIZE,
+        clubsLoading: false,
+        clubsLoadingMore: false,
+      })
     } catch (e) {
-      this.setData({ clubsLoading: false })
+      this.setData({ clubsLoading: false, clubsLoadingMore: false })
     }
+  },
+
+  // ── 上滑加载更多（根据当前 Tab 决定加载哪个）────────────────────
+  onScrollToLower() {
+    if (this.data.activeTab === 'users') this._loadUsers(true)
+    else this._loadClubs(this.data.clubKeyword, true)
   },
 
   onClubSearch(e) {

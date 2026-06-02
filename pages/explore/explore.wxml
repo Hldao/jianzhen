@@ -13,6 +13,8 @@
 <scroll-view
   class="page-content"
   scroll-y enhanced show-scrollbar="{{false}}"
+  bindscrolltolower="onScrollToLower"
+  lower-threshold="120"
   style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);"
 >
 

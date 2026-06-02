@@ -141,10 +141,13 @@ Page({
     goalDaysLeft: 0,
     goalDeadlineStr: '',
 
-    // 箭友动态
+    // 箭友动态 · 支持分页上滑加载
     feeds: [],
     feedEmpty: false,
     feedLoading: true,
+    feedLoadingMore: false,
+    feedSkip: 0,
+    feedHasMore: true,
 
     // 隐私授权弹层
     showPrivacy: false,
@@ -230,11 +233,17 @@ Page({
     })
   },
 
-  async _loadFeed() {
+  async _loadFeed(append = false) {
+    if (append) {
+      if (this.data.feedLoadingMore || !this.data.feedHasMore) return
+      this.setData({ feedLoadingMore: true })
+    }
     try {
       const api = require('../../utils/cloud')
-      const res = await api.social.getPublicFeed({ limit: 10 })
-      const feeds = (res.feed || []).map(f => ({
+      const skip = append ? this.data.feedSkip : 0
+      const limit = 10
+      const res = await api.social.getPublicFeed({ limit, skip })
+      const newFeeds = (res.feed || []).map(f => ({
         ...f,
         timeLabel:  this._formatFeedTime(f.ts),
         likes:      f.likes || 0,
@@ -242,14 +251,22 @@ Page({
         tag:        f.tag || (f.isPB ? '个人最佳' : f.streakDay >= 7 ? `连续训练第 ${f.streakDay} 天` : ''),
         sourceType: f.sourceType || '',
       }))
+      const allFeeds = append ? this.data.feeds.concat(newFeeds) : newFeeds
       this.setData({
-        feeds,
-        feedEmpty:   feeds.length === 0,
-        feedLoading: false,
+        feeds: allFeeds,
+        feedEmpty:       allFeeds.length === 0,
+        feedLoading:     false,
+        feedLoadingMore: false,
+        feedSkip:        (append ? this.data.feedSkip : 0) + newFeeds.length,
+        feedHasMore:     newFeeds.length >= limit,
       })
     } catch (e) {
-      this.setData({ feedLoading: false, feedEmpty: true })
+      this.setData({ feedLoading: false, feedLoadingMore: false, feedEmpty: !append })
     }
+  },
+
+  onScrollToLower() {
+    this._loadFeed(true)
   },
 
   // 格式化动态时间
