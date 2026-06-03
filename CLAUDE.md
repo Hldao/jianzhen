@@ -28,7 +28,9 @@ miniprogram-1/
 ├── styles/
 │   └── icons.wxss                  # 全局图标系统（LC 图标）
 ├── utils/
-│   └── cloud.js                    # 统一 API 封装（所有页面通过此文件调云函数）
+│   ├── cloud.js                    # 统一 API 封装（所有页面通过此文件调云函数）
+│   ├── error.js                    # handleErr(scope, e, toastMsg?) 统一错误日志
+│   └── training-helper.js          # 训练相关的纯 helper（SCORE_VAL/ARROW_CLS/SLOT_COLORS/calcOpponentLevel/randNormal/fmtSecs/fmtTimeLabel）
 └── cloudfunctions/db-init.md       # 数据库集合 + 索引建立说明
 ```
 
@@ -157,7 +159,7 @@ training.js 支持三种模式：
 | 淘汰赛 | `elimination` | WA 奥运淘汰赛规则：每组 3 支箭，按 set point 制，先到 6 分胜 |
 | 自由练习 | `custom` | 自定义箭数/组数/时间 |
 
-### 淘汰赛虚拟对手
+### 淘汰赛虚拟对手（实现位于 `utils/training-helper.js`）
 - `calcOpponentLevel(history, distance, bowLabel)` — 用历史记录（同距离+弓种，3箭组）拟合均值/标准差
 - 历史不足 6 组时默认 mean=21, std=3
 - `randNormal(mean, std)` — Box-Muller 变换生成正态分布随机对手得分
@@ -354,7 +356,7 @@ app.globalData.navBarHeight
 - 首页冷启动白屏优化（本地缓存先渲染，云端数据后覆盖）
 - 数据库一键初始化 `init` 云函数（建集合 + 历史记录回填 social_feed）
 - 上线前体检：数据迁移幂等 / 点赞互斥锁 / 通知徽章清除 / 训练记录权限校验 / 长文本截断（5 处页面）
-- **2026-06 优化轮次**（6 轮 commit）：
+- **2026-06 优化轮次**（8 轮 commit）：
   - 云函数全量统一 dispatch + 顶层 try/catch（user/training/goal/social）
   - 列表分页：index feed / explore 箭友+俱乐部 / clubdetail 成员 / history 记录
   - history `displayRecords` 分批渲染模式（records 算 stats，displayRecords 渲列表）
@@ -363,11 +365,11 @@ app.globalData.navBarHeight
   - 首页 onShow 串行 await 改 `Promise.allSettled` 并行（首屏 ↓ ~1.5s）
   - 首次启动弹层引导授权头像/昵称（用 button + nickname input，符合微信新规）
   - 俱乐部切换失败 UI 回滚 + 多处 timer 退出清理（避免 setData on dead page）
+  - 错误处理统一：抽 `utils/error.js` 暴露 `handleErr`，9 个页面 16 处 console.warn 全部统一
+  - 抽 `utils/training-helper.js`：SCORE_VAL / ARROW_CLS / SLOT_COLORS / calcOpponentLevel / randNormal / fmtSecs / fmtTimeLabel
 
 ### 待开发 📋
 - 社交关注功能（`follows` 集合已建，UI 未开发）
-- 错误处理统一：抽 utils/error.js + handleErr 助手，替换 31 处 catch 块（技术债）
-- training.js 抽 utils（738 行单文件，建议拆 utils/training-helper.js）
 
 ### 手动运维步骤（新环境首次部署）
 1. 微信开发者工具上传并部署云函数：`user` / `training` / `social` / `goal` / `init`

@@ -1,61 +1,17 @@
 const { handleErr } = require('../../utils/error')
-
-const SCORE_VAL = s => s === 'X' ? 10 : s === 'M' ? 0 : parseInt(s)
+const {
+  SCORE_VAL,
+  SLOT_COLORS,
+  calcOpponentLevel,
+  randNormal,
+  fmtSecs,
+  fmtTimeLabel,
+} = require('../../utils/training-helper')
 
 // 精彩时刻：完美一组后等待继续的回调
 let _pendingContinue = null
 // 淘汰赛局结果确认后等待继续的回调
 let _pendingElimResult = null
-
-function calcOpponentLevel(history, distance, bowLabel) {
-  const relevant = history
-    .filter(r => r.endResults && r.distance === distance && r.bowType === bowLabel)
-    .flatMap(r => r.endResults.filter(e => e.arrows && e.arrows.length === 3))
-  if (relevant.length < 6) return { mean: 21, std: 3, hasHistory: false }
-  const scores = relevant.map(e => e.total)
-  const mean = scores.reduce((a, b) => a + b, 0) / scores.length
-  const variance = scores.reduce((a, b) => a + (b - mean) ** 2, 0) / scores.length
-  return { mean: Math.round(mean * 10) / 10, std: Math.round(Math.max(1.5, Math.sqrt(variance)) * 10) / 10, hasHistory: true }
-}
-
-function randNormal(mean, std) {
-  let u = 0, v = 0
-  while (u === 0) u = Math.random()
-  while (v === 0) v = Math.random()
-  const z = Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v)
-  return Math.round(Math.min(30, Math.max(0, mean + z * std)))
-}
-
-// WA 标准 122cm 靶纸：X/10/9 黄  ·  8/7 红  ·  6/5 蓝  ·  4/3 黑  ·  2/1 白
-const SLOT_COLORS = {
-  'X':  { bg: '#F5C518', text: '#1A1A2E' },
-  '10': { bg: '#F5C518', text: '#1A1A2E' },
-  '9':  { bg: '#F5C518', text: '#1A1A2E' },
-  '8':  { bg: '#E63946', text: '#fff' },
-  '7':  { bg: '#E63946', text: '#fff' },
-  '6':  { bg: '#457B9D', text: '#fff' },
-  '5':  { bg: '#457B9D', text: '#fff' },
-  '4':  { bg: '#1D1D1D', text: '#fff' },
-  '3':  { bg: '#1D1D1D', text: '#fff' },
-  '2':  { bg: '#F5F5F5', text: '#1A1A2E' },
-  '1':  { bg: '#F5F5F5', text: '#1A1A2E' },
-  'M':  { bg: '#9CA3AF', text: '#fff' },
-}
-
-function fmtSecs(s) {
-  if (s <= 0) return '0:00'
-  const m = Math.floor(s / 60)
-  const sec = s % 60
-  return m + ':' + (sec < 10 ? '0' + sec : sec)
-}
-
-function fmtTimeLabel(s) {
-  if (s === 0) return '无限制'
-  if (s < 60) return s + '秒'
-  const m = Math.floor(s / 60)
-  const rem = s % 60
-  return rem === 0 ? m + '分钟' : m + '分' + rem + '秒'
-}
 
 Page({
   data: {

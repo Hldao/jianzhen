@@ -1,30 +1,5 @@
 const { handleErr } = require('../../utils/error')
-
-// WA 标准 122cm 靶纸：X/10/9 黄  ·  8/7 红  ·  6/5 蓝  ·  4/3 黑  ·  2/1 白
-const ARROW_CLS = a => {
-  if (a === 'X')                    return 'x'
-  if (a === '10' || a === '9')      return 'ten'
-  if (a === '8' || a === '7')       return 'red'
-  if (a === '6' || a === '5')       return 'blue'
-  if (a === '4' || a === '3')       return 'dark'
-  if (a === 'M')                    return 'miss'
-  return 'white'
-}
-
-const SLOT_COLORS = {
-  'X':  { bg: '#F5C518', text: '#1A1A2E' },
-  '10': { bg: '#F5C518', text: '#1A1A2E' },
-  '9':  { bg: '#F5C518', text: '#1A1A2E' },
-  '8':  { bg: '#E63946', text: '#fff' },
-  '7':  { bg: '#E63946', text: '#fff' },
-  '6':  { bg: '#457B9D', text: '#fff' },
-  '5':  { bg: '#457B9D', text: '#fff' },
-  '4':  { bg: '#1D1D1D', text: '#fff' },
-  '3':  { bg: '#1D1D1D', text: '#fff' },
-  '2':  { bg: '#F5F5F5', text: '#1A1A2E' },
-  '1':  { bg: '#F5F5F5', text: '#1A1A2E' },
-  'M':  { bg: '#9CA3AF', text: '#fff' },
-}
+const { ARROW_CLS, SLOT_COLORS } = require('../../utils/training-helper')
 
 Page({
   data: {
