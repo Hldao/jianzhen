@@ -48,6 +48,15 @@ App({
         }
         wx.setStorageSync('migration_done', true)
       }
+
+      // 首次进入 / 资料不全 → 标记需要 onboarding 引导授权头像昵称
+      // 微信新规：头像昵称必须用户主动点 button 触发，不能页面 onLoad 隐式弹
+      // 所以这里只设标志，由首页 index.js onShow 检查后弹层引导用户主动点击
+      const u = res.user || {}
+      const needsAvatarNickname = res.isNew || !u.nickName || !u.avatarUrl
+      if (needsAvatarNickname && !wx.getStorageSync('onboarding_done')) {
+        this.globalData.needOnboarding = true
+      }
     } catch (e) {
       console.error('用户初始化失败', e)
     }
@@ -55,6 +64,7 @@ App({
 
   globalData: {
     userInfo:        null,
+    needOnboarding:  false,  // 首次/资料空时为 true，触发 index 首页弹 onboarding 引导
     statusBarHeight: 20,
     navBarHeight:    44,
     menuButton:      null,

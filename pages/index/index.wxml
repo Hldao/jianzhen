@@ -220,3 +220,45 @@
     </view>
   </view>
 </view>
+
+<!-- ── 首次进入引导授权头像/昵称 ── -->
+<view wx:if="{{showOnboarding}}" class="ob-mask" catchtap="noop">
+  <view class="ob-card" catchtap="noop">
+    <view class="ob-title">欢迎来到箭证 🏹</view>
+    <view class="ob-sub">设个头像和名字，让训练有归属</view>
+
+    <button
+      class="ob-avatar-btn"
+      open-type="chooseAvatar"
+      bindchooseavatar="onChooseObAvatar"
+    >
+      <image wx:if="{{obAvatarUrl}}" class="ob-avatar-img" src="{{obAvatarUrl}}" mode="aspectFill"></image>
+      <view wx:else class="ob-avatar-placeholder">
+        <text class="ob-avatar-emoji">🏹</text>
+      </view>
+      <view class="ob-avatar-edit-dot"></view>
+    </button>
+    <text class="ob-avatar-hint">{{obAvatarUrl ? '点击更换' : '点击选择微信头像'}}</text>
+
+    <view class="ob-field">
+      <input
+        class="ob-input"
+        type="nickname"
+        placeholder="点击填入微信昵称"
+        value="{{obNickName}}"
+        maxlength="16"
+        bindinput="onObNicknameInput"
+        bindblur="onObNicknameInput"
+        adjust-position="{{false}}"
+      />
+    </view>
+
+    <button
+      class="ob-submit {{obAvatarUrl && obNickName ? 'ready' : 'disabled'}}"
+      bindtap="submitOnboarding"
+      disabled="{{!obAvatarUrl || !obNickName || obSaving}}"
+    >{{obSaving ? '保存中…' : '开 始 训 练'}}</button>
+
+    <view class="ob-skip" bindtap="skipOnboarding">稍后在「我的 → 编辑资料」设置</view>
+  </view>
+</view>

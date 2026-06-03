@@ -151,6 +151,12 @@ Page({
 
     // 隐私授权弹层
     showPrivacy: false,
+
+    // 首次进入引导授权头像昵称 · 微信新规要求用户主动点击触发
+    showOnboarding:  false,
+    obAvatarUrl:     '',
+    obNickName:      '',
+    obSaving:        false,
   },
 
   onLoad() {
@@ -206,6 +212,9 @@ Page({
 
     // 拉取箭友动态（不阻塞主流程）
     this._loadFeed()
+
+    // 首次进入 → 引导用户授权头像 + 昵称
+    this._checkOnboarding()
 
   },
 
@@ -294,6 +303,8 @@ Page({
 
   agreePrivacy() {
     this.setData({ showPrivacy: false })
+    // 隐私同意后立即检查 onboarding（首次进入时两个 modal 不重叠，按顺序弹）
+    this._checkOnboarding()
   },
 
   disagreePrivacy() {
@@ -304,6 +315,79 @@ Page({
       confirmText: '重新阅读',
     })
   },
+
+  // ──── 首次引导授权头像/昵称 ────────────────────────────────────
+  _checkOnboarding() {
+    const app = getApp()
+    // 隐私授权弹层优先；隐私关掉后才能弹 onboarding（避免两个 modal 叠加）
+    if (app.globalData.needOnboarding && !this.data.showPrivacy && !this.data.showOnboarding) {
+      // 预填 globalData.userInfo 中已有的（可能是 isNew 但 ts 未补全）
+      const u = app.globalData.userInfo || {}
+      this.setData({
+        showOnboarding: true,
+        obAvatarUrl: u.avatarUrl || '',
+        obNickName: u.nickName || '',
+      })
+    }
+  },
+
+  onChooseObAvatar(e) {
+    this.setData({ obAvatarUrl: e.detail.avatarUrl })
+  },
+  onObNicknameInput(e) {
+    this.setData({ obNickName: e.detail.value })
+  },
+
+  async submitOnboarding() {
+    if (this.data.obSaving) return
+    const nickName = (this.data.obNickName || '').trim()
+    if (!nickName) {
+      wx.showToast({ title: '请输入昵称', icon: 'none' })
+      return
+    }
+    let avatarUrl = this.data.obAvatarUrl
+    if (!avatarUrl) {
+      wx.showToast({ title: '请选择头像', icon: 'none' })
+      return
+    }
+    this.setData({ obSaving: true })
+    wx.showLoading({ title: '保存中…', mask: true })
+    try {
+      // 本地临时头像 → 上传到云存储（跟 profile.js 一致）
+      if (!avatarUrl.startsWith('cloud://') && !avatarUrl.startsWith('http')) {
+        const ext = (avatarUrl.match(/\.([a-zA-Z]+)(?:\?|$)/) || [, 'jpg'])[1]
+        const cloudPath = `avatars/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`
+        const up = await wx.cloud.uploadFile({ cloudPath, filePath: avatarUrl })
+        avatarUrl = up.fileID
+      }
+      const api = require('../../utils/cloud')
+      await api.user.updateProfile({ avatarUrl, nickName })
+      const app = getApp()
+      app.globalData.userInfo = { ...app.globalData.userInfo, avatarUrl, nickName }
+      app.globalData.needOnboarding = false
+      app.globalData.profileDirty = true
+      wx.setStorageSync('onboarding_done', true)
+      wx.hideLoading()
+      this.setData({ showOnboarding: false, obSaving: false })
+      wx.showToast({ title: '欢迎，箭友', icon: 'success' })
+    } catch (e) {
+      console.warn('onboarding save failed', e)
+      wx.hideLoading()
+      this.setData({ obSaving: false })
+      wx.showToast({ title: '保存失败，请重试', icon: 'none' })
+    }
+  },
+
+  skipOnboarding() {
+    // 写 storage 避免下次再弹（用户主动跳过的意思）
+    // 用户后续可以去「我的 → 编辑资料」补全
+    wx.setStorageSync('onboarding_done', true)
+    const app = getApp()
+    app.globalData.needOnboarding = false
+    this.setData({ showOnboarding: false })
+  },
+
+  noop() {}, // 阻止 modal 内层点击冒泡到遮罩
 
   goGoal() {
     wx.navigateTo({ url: '/pages/goal/goal' })
