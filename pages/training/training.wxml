@@ -577,3 +577,6 @@
   </view>
 </view>
 
+<!-- 隐藏画布：用于生成「精彩时刻」分享图 -->
+<canvas type="2d" id="momentCanvas" class="moment-canvas-hidden"></canvas>
+

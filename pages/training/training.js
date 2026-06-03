@@ -566,9 +566,183 @@ Page({
     }
   },
 
-  saveMomentCard() {
-    wx.showToast({ title: '分享功能开发中', icon: 'none', duration: 1500 })
-    this._dismissMomentTimer = setTimeout(() => this.dismissMoment(), 1600)
+  // 渲染「精彩时刻」分享图 → 保存到相册
+  async saveMomentCard() {
+    if (this._renderingMoment) return
+    this._renderingMoment = true
+    wx.showLoading({ title: '生成中…', mask: true })
+    try {
+      const filePath = await this._renderMomentCanvas()
+      await wx.saveImageToPhotosAlbum({ filePath })
+      wx.hideLoading()
+      wx.showToast({ title: '已保存到相册', icon: 'success' })
+      this._dismissMomentTimer = setTimeout(() => this.dismissMoment(), 1200)
+    } catch (e) {
+      wx.hideLoading()
+      const msg = (e && e.errMsg) || ''
+      if (msg.indexOf('auth deny') >= 0 || msg.indexOf('authorize') >= 0 || msg.indexOf('authSetting') >= 0) {
+        wx.showModal({
+          title: '需要相册权限',
+          content: '保存图片需要授权访问相册，是否前往设置？',
+          confirmText: '去授权',
+          success: r => { if (r.confirm) wx.openSetting() },
+        })
+      } else {
+        handleErr('training.saveMomentCard', e)
+        wx.showToast({ title: '生成失败，请重试', icon: 'none' })
+      }
+    } finally {
+      this._renderingMoment = false
+    }
+  },
+
+  _renderMomentCanvas() {
+    return new Promise((resolve, reject) => {
+      const query = wx.createSelectorQuery()
+      query.select('#momentCanvas').fields({ node: true, size: true }).exec(res => {
+        if (!res || !res[0] || !res[0].node) return reject(new Error('canvas not found'))
+        const canvas = res[0].node
+        const ctx = canvas.getContext('2d')
+        const dpr = (wx.getWindowInfo && wx.getWindowInfo().pixelRatio)
+          || (wx.getSystemInfoSync && wx.getSystemInfoSync().pixelRatio)
+          || 2
+        const W = 750, H = 1334
+        canvas.width = W * dpr
+        canvas.height = H * dpr
+        ctx.scale(dpr, dpr)
+
+        const {
+          momentType, momentArrows = [],
+          momentCardScore, momentCardUnit, momentCardMeta,
+          momentIsFirstPerfect, momentIsFirstGolden,
+        } = this.data
+
+        // 类型 → 配色 + 文案
+        const themes = {
+          perfect: {
+            bgFrom: '#0F1F5C', bgMid: '#1E3A8A', bgTo: '#2563EB',
+            accent: '#F5C518', badge: '完美一组', emoji: '✦',
+          },
+          golden:  {
+            bgFrom: '#7C2D12', bgMid: '#B45309', bgTo: '#F59E0B',
+            accent: '#FDE68A', badge: '收黄一组', emoji: '⭐',
+          },
+          pb:      {
+            bgFrom: '#7C2D12', bgMid: '#C2410C', bgTo: '#FF6B35',
+            accent: '#FFF7ED', badge: '个人最佳', emoji: '🏆',
+          },
+        }
+        const t = themes[momentType] || themes.perfect
+
+        // 背景渐变
+        const bg = ctx.createLinearGradient(0, 0, W, H)
+        bg.addColorStop(0, t.bgFrom)
+        bg.addColorStop(0.55, t.bgMid)
+        bg.addColorStop(1, t.bgTo)
+        ctx.fillStyle = bg
+        ctx.fillRect(0, 0, W, H)
+
+        // 同心环装饰（右上角）
+        ctx.strokeStyle = 'rgba(255,255,255,0.06)'
+        ctx.lineWidth = 2
+        for (let i = 0; i < 6; i++) {
+          ctx.beginPath()
+          ctx.arc(W + 40, -40, 220 + i * 60, 0, Math.PI * 2)
+          ctx.stroke()
+        }
+
+        // 顶部徽章 pill
+        const badgeText = `${t.emoji}  ${t.badge}`
+        ctx.font = '600 28px PingFang SC, sans-serif'
+        const badgeW = ctx.measureText(badgeText).width + 56
+        const badgeX = (W - badgeW) / 2
+        const badgeY = 130
+        ctx.fillStyle = 'rgba(255,255,255,0.18)'
+        this._roundRect(ctx, badgeX, badgeY, badgeW, 56, 28)
+        ctx.fill()
+        ctx.fillStyle = '#fff'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(badgeText, W / 2, badgeY + 28)
+
+        // 首次成就解锁副标题
+        const firstUnlock = (momentType === 'perfect' && momentIsFirstPerfect)
+          || (momentType === 'golden' && momentIsFirstGolden)
+        if (firstUnlock) {
+          ctx.font = '500 24px PingFang SC, sans-serif'
+          ctx.fillStyle = 'rgba(255,255,255,0.85)'
+          ctx.fillText('🏅 成就解锁 · 首次达成', W / 2, 220)
+        }
+
+        // 中央大字分数
+        ctx.fillStyle = t.accent
+        ctx.font = '700 200px PingFang SC, sans-serif'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(String(momentCardScore), W / 2, H / 2 - 60)
+
+        // 单位
+        ctx.fillStyle = 'rgba(255,255,255,0.85)'
+        ctx.font = '500 40px PingFang SC, sans-serif'
+        ctx.fillText(String(momentCardUnit), W / 2, H / 2 + 80)
+
+        // 完美一组 / 收黄：画 6 个箭支圆
+        if ((momentType === 'perfect' || momentType === 'golden') && momentArrows.length) {
+          const n = momentArrows.length
+          const r = 36
+          const gap = 96
+          const totalW = (n - 1) * gap
+          const startX = (W - totalW) / 2
+          const cy = H / 2 + 200
+          momentArrows.forEach((a, i) => {
+            const cx = startX + i * gap
+            ctx.beginPath()
+            ctx.arc(cx, cy, r, 0, Math.PI * 2)
+            ctx.fillStyle = 'rgba(255,255,255,0.95)'
+            ctx.fill()
+            ctx.fillStyle = '#1A1A2E'
+            ctx.font = '700 32px PingFang SC, sans-serif'
+            ctx.fillText(String(a), cx, cy + 2)
+          })
+        }
+
+        // 底部 meta
+        ctx.fillStyle = 'rgba(255,255,255,0.75)'
+        ctx.font = '400 26px PingFang SC, sans-serif'
+        ctx.fillText(String(momentCardMeta || ''), W / 2, H - 220)
+
+        // 水印
+        ctx.fillStyle = 'rgba(255,255,255,0.55)'
+        ctx.font = '500 28px PingFang SC, sans-serif'
+        ctx.fillText('箭证', W / 2, H - 130)
+        ctx.fillStyle = 'rgba(255,255,255,0.35)'
+        ctx.font = '22px PingFang SC, sans-serif'
+        ctx.fillText('用数据陪你练好每一支箭', W / 2, H - 80)
+
+        // 输出图片
+        setTimeout(() => {
+          wx.canvasToTempFilePath({
+            canvas,
+            success: r => resolve(r.tempFilePath),
+            fail: reject,
+          })
+        }, 30)
+      })
+    })
+  },
+
+  _roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath()
+    ctx.moveTo(x + r, y)
+    ctx.lineTo(x + w - r, y)
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r)
+    ctx.lineTo(x + w, y + h - r)
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h)
+    ctx.lineTo(x + r, y + h)
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r)
+    ctx.lineTo(x, y + r)
+    ctx.quadraticCurveTo(x, y, x + r, y)
+    ctx.closePath()
   },
 
   onNoteInput(e) {

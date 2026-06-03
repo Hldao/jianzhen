@@ -1062,3 +1062,12 @@ page {
 .el-elim-win  { color: #059669; }
 .el-elim-draw { color: var(--text-mid); }
 .el-elim-lose { color: #EF4444; }
+
+/* 隐藏画布（用于精彩时刻分享图离屏渲染） */
+.moment-canvas-hidden {
+  position: fixed;
+  left: -9999rpx;
+  top: 0;
+  width: 750rpx;
+  height: 1334rpx;
+}
