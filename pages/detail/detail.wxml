@@ -134,10 +134,29 @@
   <view class="sc-title-row">
     <text class="sc-icon">📸</text>
     <text class="sc-title">训练照片</text>
+    <text wx:if="{{record.medias.length}}" class="sc-sub">{{record.medias.length}}/9</text>
   </view>
-  <view class="media-placeholder" bindtap="addMedia">
-    <text class="media-ph-icon">＋</text>
-    <text class="media-ph-txt">添加照片或视频</text>
+  <view class="media-grid">
+    <view
+      wx:for="{{record.medias}}"
+      wx:key="*this"
+      class="media-cell"
+      bindtap="previewMedia"
+      data-idx="{{index}}"
+    >
+      <image class="media-img" src="{{item}}" mode="aspectFill" lazy-load="{{true}}"></image>
+      <view class="media-del" catchtap="removeMedia" data-idx="{{index}}">
+        <text>✕</text>
+      </view>
+    </view>
+    <view
+      wx:if="{{(record.medias.length || 0) < 9}}"
+      class="media-cell media-add-cell"
+      bindtap="addMedia"
+    >
+      <text class="media-add-icon">＋</text>
+      <text class="media-add-txt">添加</text>
+    </view>
   </view>
 </view>
 

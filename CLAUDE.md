@@ -100,6 +100,7 @@ await api.social.createClub({ name, city })
 | `getOne` | 获取单条详情 |
 | `delete` | 删除记录，同步删 social_feed |
 | `migrate` | 首次登录时迁移本地历史数据到云端 |
+| `updateMedias` | 更新训练照片列表（cloud:// 路径数组，最多 9 张） |
 
 ### `social` 云函数
 
@@ -331,6 +332,7 @@ app.globalData.navBarHeight
 ### 19. 隐私协议涉及的接口边界
 微信审核会扫描代码识别敏感接口。当前主流程涉及：
 - `wx.saveImageToPhotosAlbum`（detail.js 分享卡保存到相册）→ 协议须写「相册（仅写入）」
+- `wx.chooseMedia`（detail.js 训练照片选图）→ 协议须写「相册（读取）」
 - `open-type="chooseAvatar"` + `type="nickname"`（profile.wxml）→ 协议须写「微信昵称、头像」
 
 ---

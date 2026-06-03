@@ -43,6 +43,8 @@ const training = {
   delete:   (id)     => call('training', 'delete', { id }),
   // 本地数据迁移到云端（一次性）
   migrate:  (records)=> call('training', 'migrate', { records }),
+  // 更新照片列表（medias 是 cloud:// 路径数组）
+  updateMedias: (recordId, medias) => call('training', 'updateMedias', { recordId, medias }),
 }
 
 // ── 训练目标 ──────────────────────────────────────────────────────

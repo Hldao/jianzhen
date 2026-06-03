@@ -178,13 +178,48 @@ page {
 }
 
 /* ── 训练照片 ── */
-.media-placeholder {
-  display: flex; flex-direction: column; align-items: center;
-  padding: 40rpx 0;
-  border: 2rpx dashed var(--border); border-radius: 20rpx;
+.sc-sub { margin-left: auto; font-size: 22rpx; color: var(--text-mid); }
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12rpx;
 }
-.media-ph-icon { font-size: 56rpx; color: var(--text-light); margin-bottom: 12rpx; }
-.media-ph-txt  { font-size: 26rpx; color: var(--text-light); }
+.media-cell {
+  position: relative;
+  width: 100%;
+  padding-top: 100%;  /* 1:1 正方形 */
+  border-radius: 16rpx;
+  overflow: hidden;
+  background: var(--border);
+}
+.media-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+}
+.media-del {
+  position: absolute; top: 6rpx; right: 6rpx;
+  width: 36rpx; height: 36rpx; border-radius: 50%;
+  background: rgba(0,0,0,.55); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20rpx; line-height: 1;
+}
+.media-add-cell {
+  background: #F8FAFC;
+  border: 2rpx dashed var(--border);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding-top: calc(100% - 4rpx);
+}
+.media-add-icon {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -70%);
+  font-size: 48rpx; color: var(--text-light); line-height: 1;
+}
+.media-add-txt {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, 12rpx);
+  font-size: 22rpx; color: var(--text-light); line-height: 1;
+}
 
 /* ── 智能洞察 ── */
 .insight-card {

@@ -23,6 +23,7 @@ async function dispatch(OPENID, action, event) {
     case 'getOne':   return getOne(OPENID, event.id)
     case 'delete':   return del(OPENID, event.id)
     case 'migrate':  return migrate(OPENID, event.records)
+    case 'updateMedias': return updateMedias(OPENID, event.recordId, event.medias)
     default:         return { code: 400, msg: 'unknown action' }
   }
 }
@@ -115,6 +116,24 @@ async function getOne(openid, id) {
   // 鉴权：只能查自己的
   if (res.data._openid !== openid) return { code: 403, msg: '无权限' }
   return { code: 0, record: res.data }
+}
+
+// ── 更新训练照片 ───────────────────────────────────────────────────
+// medias 是 cloud:// 路径数组，前端先 wx.cloud.uploadFile 拿到 fileID 再调本接口写入
+async function updateMedias(openid, recordId, medias) {
+  if (!recordId) return { code: 400, msg: 'recordId required' }
+  if (!Array.isArray(medias)) return { code: 400, msg: 'medias must be array' }
+  if (medias.length > 9) return { code: 400, msg: 'max 9 photos' }
+
+  const existing = await db.collection('training_records').doc(recordId).get()
+  if (!existing.data || existing.data._openid !== openid) {
+    return { code: 403, msg: '无权限' }
+  }
+
+  await db.collection('training_records').doc(recordId).update({
+    data: { medias }
+  })
+  return { code: 0, medias }
 }
 
 // ── 删除训练记录 ───────────────────────────────────────────────────

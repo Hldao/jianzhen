@@ -464,10 +464,6 @@ Page({
     }
   },
 
-  openFeedList() {
-    wx.showToast({ title: '动态列表页开发中', icon: 'none' })
-  },
-
   // 空状态引导：去发现箭友
   goExplore() {
     wx.navigateTo({ url: '/pages/explore/explore' })

@@ -134,8 +134,94 @@ Page({
     this.setData({ editingNote: false, noteInput: this.data.record.note || '' })
   },
 
-  addMedia() {
-    wx.showToast({ title: '照片功能开发中', icon: 'none' })
+  // 选图 → 云存储上传 → 调云函数写入 record.medias
+  async addMedia() {
+    if (this._addingMedia) return
+    const existing = (this.data.record && this.data.record.medias) || []
+    const remain = 9 - existing.length
+    if (remain <= 0) {
+      wx.showToast({ title: '最多 9 张照片', icon: 'none' })
+      return
+    }
+
+    let chooseRes
+    try {
+      chooseRes = await wx.chooseMedia({
+        count: remain,
+        mediaType: ['image'],
+        sourceType: ['album', 'camera'],
+        sizeType: ['compressed'],
+      })
+    } catch (e) {
+      return  // 用户取消，静默
+    }
+    const files = (chooseRes && chooseRes.tempFiles) || []
+    if (!files.length) return
+
+    this._addingMedia = true
+    wx.showLoading({ title: `上传 0/${files.length}`, mask: true })
+
+    try {
+      const recordId = this.data.record._id
+      if (!recordId) throw new Error('record._id 缺失，无法关联照片')
+      const uploaded = []
+      for (let i = 0; i < files.length; i++) {
+        const f = files[i]
+        const ext = (f.tempFilePath.match(/\.([a-zA-Z]+)(?:\?|$)/) || [, 'jpg'])[1]
+        const cloudPath = `training-media/${recordId}/${Date.now()}-${i}.${ext}`
+        const up = await wx.cloud.uploadFile({ cloudPath, filePath: f.tempFilePath })
+        uploaded.push(up.fileID)
+        wx.showLoading({ title: `上传 ${i + 1}/${files.length}`, mask: true })
+      }
+      const merged = [...existing, ...uploaded]
+      const api = require('../../utils/cloud')
+      await api.training.updateMedias(recordId, merged)
+      this.setData({ 'record.medias': merged })
+      wx.hideLoading()
+      wx.showToast({ title: '已添加', icon: 'success' })
+    } catch (e) {
+      handleErr('detail.addMedia', e)
+      wx.hideLoading()
+      wx.showToast({ title: '上传失败，请重试', icon: 'none' })
+    } finally {
+      this._addingMedia = false
+    }
+  },
+
+  previewMedia(e) {
+    const idx = +e.currentTarget.dataset.idx
+    const urls = (this.data.record && this.data.record.medias) || []
+    if (!urls.length) return
+    wx.previewImage({ current: urls[idx], urls })
+  },
+
+  async removeMedia(e) {
+    const idx = +e.currentTarget.dataset.idx
+    const medias = (this.data.record && this.data.record.medias) || []
+    if (idx < 0 || idx >= medias.length) return
+
+    const confirm = await new Promise(resolve => {
+      wx.showModal({
+        title: '删除这张照片？',
+        confirmColor: '#E63946',
+        success: r => resolve(r.confirm),
+        fail:    () => resolve(false),
+      })
+    })
+    if (!confirm) return
+
+    const target = medias[idx]
+    const newMedias = medias.filter((_, i) => i !== idx)
+    try {
+      const api = require('../../utils/cloud')
+      await api.training.updateMedias(this.data.record._id, newMedias)
+      this.setData({ 'record.medias': newMedias })
+      // 异步清理云存储文件，失败不影响 UI
+      wx.cloud.deleteFile({ fileList: [target] }).catch(() => {})
+    } catch (e) {
+      handleErr('detail.removeMedia', e)
+      wx.showToast({ title: '删除失败', icon: 'none' })
+    }
   },
 
   goBack() { wx.navigateBack() },
