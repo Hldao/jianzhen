@@ -1,4 +1,5 @@
 const api = require('../../utils/cloud')
+const { handleErr } = require('../../utils/error')
 
 // ── 图表工具 ──────────────────────────────────────────────────────
 const DIST_COLOR = { '70m': '#2563EB', '30m': '#10B981', '18m': '#FF6B35', 'other': '#94A3B8' }
@@ -122,7 +123,7 @@ Page({
       wx.setStorageSync('training_history', merged)
       this._applyRecords(merged)
     } catch (e) {
-      console.warn('云端刷新失败', e)
+      handleErr('history.cloudRefresh', e)
       if (cached.length === 0) {
         wx.showToast({ title: '网络不可用', icon: 'none', duration: 2000 })
       }

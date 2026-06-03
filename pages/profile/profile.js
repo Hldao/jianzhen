@@ -1,3 +1,5 @@
+const { handleErr } = require('../../utils/error')
+
 Page({
   data: {
     statusBarHeight: 20,
@@ -83,7 +85,7 @@ Page({
       const clubs = res.clubs || []
       this.setData({ clubs, filteredClubs: clubs })
     } catch (e) {
-      console.warn('loadClubs failed', e)
+      handleErr('profile.loadClubs', e)
     }
   },
 
@@ -114,7 +116,7 @@ Page({
       if (oldId && oldId !== id) await api.social.leaveClub({ clubId: oldId })
       await api.social.joinClub({ clubId: id })
     } catch (err) {
-      console.warn('joinClub failed', err)
+      handleErr('profile.joinClub', err)
       // 失败回滚 UI，避免本地状态与云端 club_members 不一致
       this.setData({ club: oldName, clubId: oldId })
       wx.showToast({ title: '操作失败，请重试', icon: 'none' })
@@ -130,7 +132,7 @@ Page({
       const api = require('../../utils/cloud')
       await api.social.leaveClub({ clubId: oldId })
     } catch (err) {
-      console.warn('leaveClub failed', err)
+      handleErr('profile.leaveClub', err)
       this.setData({ club: oldName, clubId: oldId })
       wx.showToast({ title: '退出失败，请重试', icon: 'none' })
     }
@@ -178,7 +180,7 @@ Page({
       })
       wx.showToast({ title: '俱乐部已创建', icon: 'success' })
     } catch (e) {
-      console.warn('createClub failed', e)
+      handleErr('profile.createClub', e)
       wx.showToast({ title: '网络错误，请重试', icon: 'none' })
       this.setData({ creatingClub: false })
     }
@@ -203,7 +205,7 @@ Page({
         const up = await wx.cloud.uploadFile({ cloudPath, filePath: avatarUrl })
         avatarUrl = up.fileID
       } catch (e) {
-        console.warn('avatar upload failed', e)
+        handleErr('profile.avatarUpload', e)
         wx.hideLoading()
         wx.showToast({ title: '头像上传失败，请重试', icon: 'none' })
         this._saving = false
@@ -220,7 +222,7 @@ Page({
       const api = require('../../utils/cloud')
       await api.user.updateProfile(profile)
     } catch (e) {
-      console.warn('updateProfile failed', e)
+      handleErr('profile.updateProfile', e)
     }
     wx.hideLoading()
     this._saving = false

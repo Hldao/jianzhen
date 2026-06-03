@@ -1,3 +1,5 @@
+const { handleErr } = require('../../utils/error')
+
 Page({
   data: {
     statusBarHeight: 20,
@@ -38,7 +40,7 @@ Page({
       this.setData({ notifications: list, loading: false })
       this._applyFilter()
     } catch (e) {
-      console.warn('notification load failed', e)
+      handleErr('notification.load', e)
       this.setData({ loading: false })
     }
   },
@@ -80,7 +82,7 @@ Page({
       const api = require('../../utils/cloud')
       await api.social.markAllRead()
     } catch (e) {
-      console.warn('markAllRead failed', e)
+      handleErr('notification.markAllRead', e)
     }
   },
 
@@ -96,7 +98,7 @@ Page({
         const api = require('../../utils/cloud')
         await api.social.markRead({ id })
       } catch (e) {
-        console.warn('markRead failed', e)
+        handleErr('notification.markRead', e)
       }
     }
   },

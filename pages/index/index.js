@@ -1,3 +1,5 @@
+const { handleErr } = require('../../utils/error')
+
 // ── 日期工具 ──────────────────────────────────────────────────────
 function toDateKey(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
@@ -374,7 +376,7 @@ Page({
       this.setData({ showOnboarding: false, obSaving: false })
       wx.showToast({ title: '欢迎，箭友', icon: 'success' })
     } catch (e) {
-      console.warn('onboarding save failed', e)
+      handleErr('index.onboardingSave', e)
       wx.hideLoading()
       this.setData({ obSaving: false })
       wx.showToast({ title: '保存失败，请重试', icon: 'none' })

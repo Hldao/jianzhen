@@ -1,3 +1,5 @@
+const { handleErr } = require('../../utils/error')
+
 Page({
   data: {
     statusBarHeight: 20,
@@ -96,7 +98,7 @@ Page({
         deadline: goal.deadline,
       })
     } catch (e) {
-      console.warn('saveGoal cloud failed', e)
+      handleErr('goal.save', e)
       wx.showToast({ title: '云端同步失败，本地已保存', icon: 'none', duration: 2000 })
       setTimeout(() => wx.navigateBack(), 2200)
       return

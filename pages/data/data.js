@@ -1,3 +1,5 @@
+const { handleErr } = require('../../utils/error')
+
 const MAX_BAR_H = 160
 const DIST_COLOR = { '70m': '#2563EB', '30m': '#10B981', '18m': '#FF6B35', 'other': '#94A3B8' }
 function distColor(d) { return DIST_COLOR[d] || DIST_COLOR.other }
@@ -258,7 +260,7 @@ Page({
       this._records = merged
       this._applyRecords(merged)
     } catch (e) {
-      console.warn('云端刷新失败', e)
+      handleErr('data.cloudRefresh', e)
       if (cached.length === 0) {
         wx.showToast({ title: '网络不可用', icon: 'none', duration: 2000 })
       }

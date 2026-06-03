@@ -1,3 +1,5 @@
+const { handleErr } = require('../../utils/error')
+
 const SCORE_VAL = s => s === 'X' ? 10 : s === 'M' ? 0 : parseInt(s)
 
 // 精彩时刻：完美一组后等待继续的回调
@@ -658,7 +660,7 @@ Page({
     // 同步到云端（异步，不阻塞导航；失败时给用户提示，本地已留底）
     const api = require('../../utils/cloud')
     api.training.save(record).catch(e => {
-      console.error('云端同步失败', e)
+      handleErr('training.cloudSave', e)
       wx.showToast({
         title: '云端同步失败，记录已存本地',
         icon: 'none',

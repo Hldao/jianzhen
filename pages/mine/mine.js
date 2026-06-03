@@ -1,3 +1,5 @@
+const { handleErr } = require('../../utils/error')
+
 function rts(r) { return r.ts ?? r.id }
 
 function getWeekStart(d) {
@@ -211,7 +213,7 @@ Page({
         achievements: buildAchievements(sessions, streak, wx.getStorageSync('achievement_golden_end') || null, wx.getStorageSync('achievement_perfect_end') || null),
       })
     } catch (e) {
-      console.warn('mine load failed', e)
+      handleErr('mine.load', e)
       const stored = wx.getStorageSync('training_history') || []
       const streak = computeStreak(stored)
       this.setData({

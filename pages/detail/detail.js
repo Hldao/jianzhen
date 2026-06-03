@@ -1,3 +1,5 @@
+const { handleErr } = require('../../utils/error')
+
 // WA 标准 122cm 靶纸：X/10/9 黄  ·  8/7 红  ·  6/5 蓝  ·  4/3 黑  ·  2/1 白
 const ARROW_CLS = a => {
   if (a === 'X')                    return 'x'
@@ -172,7 +174,7 @@ Page({
       const path = await this._renderShareCanvas()
       this.setData({ shareImagePath: path, showShare: true, sharing: false })
     } catch (e) {
-      console.error('share render fail', e)
+      handleErr('detail.shareRender', e)
       wx.showToast({ title: '生成失败，请重试', icon: 'none' })
       this.setData({ sharing: false })
     } finally {
