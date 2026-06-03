@@ -1,0 +1,110 @@
+<!-- 导航栏 -->
+<view class="navbar" style="padding-top:{{statusBarHeight}}px;">
+  <view class="navbar-inner" style="height:{{navBarHeight}}px;">
+    <view class="nb-back" bindtap="goBack"><text class="nb-back-icon">‹</text></view>
+    <text class="nb-title">关于箭证</text>
+    <view style="width:64rpx;"></view>
+  </view>
+</view>
+
+<scroll-view
+  scroll-y enhanced show-scrollbar="{{false}}"
+  class="page-body"
+  style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);"
+>
+
+  <!-- Hero -->
+  <view class="hero">
+    <view class="logo-ring">
+      <view class="logo-ring-2">
+        <view class="logo-ring-3">
+          <view class="logo-dot"></view>
+        </view>
+      </view>
+    </view>
+    <text class="hero-title">箭证</text>
+    <text class="hero-slogan">记录每一支箭，看见你的进步</text>
+    <view class="hero-version">
+      <text>版本 v{{version}}</text>
+    </view>
+  </view>
+
+  <!-- 关于产品 -->
+  <view class="card">
+    <text class="card-title">关于产品</text>
+    <text class="card-text">
+      箭证是一款专为射箭爱好者打造的训练记录工具。从每一组的录入、每一支箭的环值，
+      到长期的数据趋势和成就解锁，帮你把训练过程沉淀为可见的进步。
+    </text>
+    <text class="card-text">
+      支持反曲弓、复合弓、传统弓、光弓的标准积分赛、淘汰赛模拟和自由练习。
+      训练完成后自动生成智能洞察和分享卡片，可加入俱乐部、发现箭友、互相鼓励。
+    </text>
+  </view>
+
+  <!-- 核心功能 -->
+  <view class="card">
+    <text class="card-title">核心功能</text>
+    <view class="feat-row">
+      <view class="feat-icon feat-icon-orange">🎯</view>
+      <view class="feat-info">
+        <text class="feat-name">训练录入</text>
+        <text class="feat-desc">每支箭精确到环值，支持 X/M，淘汰赛对手模拟</text>
+      </view>
+    </view>
+    <view class="feat-row">
+      <view class="feat-icon feat-icon-blue">📈</view>
+      <view class="feat-info">
+        <text class="feat-name">数据分析</text>
+        <text class="feat-desc">趋势折线、X/10 占比、稳定性分析，7 条智能洞察</text>
+      </view>
+    </view>
+    <view class="feat-row">
+      <view class="feat-icon feat-icon-green">👥</view>
+      <view class="feat-info">
+        <text class="feat-name">箭友社区</text>
+        <text class="feat-desc">公开训练动态、俱乐部、用户主页，发现一起练的人</text>
+      </view>
+    </view>
+    <view class="feat-row">
+      <view class="feat-icon feat-icon-yellow">🏅</view>
+      <view class="feat-info">
+        <text class="feat-name">成就系统</text>
+        <text class="feat-desc">完美一组、收黄、个人最佳，每个里程碑都被看见</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 反馈与建议 -->
+  <view class="card">
+    <text class="card-title">反馈与建议</text>
+    <text class="card-text">
+      产品还在打磨中，如果你在使用中遇到问题、或者有功能建议，欢迎告诉我们。
+      你的反馈会直接影响箭证的下一个版本。
+    </text>
+    <view class="contact-row" bindtap="copyWechat">
+      <view class="contact-icon">💬</view>
+      <view class="contact-info">
+        <text class="contact-label">添加开发者微信</text>
+        <text class="contact-value">{{contactWechat}}</text>
+      </view>
+      <view class="contact-action">复制</view>
+    </view>
+  </view>
+
+  <!-- 协议 -->
+  <view class="card card-list">
+    <view class="list-row" bindtap="openPrivacyContract">
+      <text class="list-row-label">用户隐私保护指引</text>
+      <text class="list-row-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- Footer -->
+  <view class="footer">
+    <text class="footer-line">© 2026 箭证</text>
+    <text class="footer-line footer-line-sub">用数据陪你练好每一支箭</text>
+  </view>
+
+  <view class="bottom-safe"></view>
+</scroll-view>

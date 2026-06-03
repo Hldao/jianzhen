@@ -11,7 +11,8 @@
     "pages/goal/goal",
     "pages/profile/profile",
     "pages/userprofile/userprofile",
-    "pages/clubdetail/clubdetail"
+    "pages/clubdetail/clubdetail",
+    "pages/about/about"
   ],
   "__usePrivacyCheck__": true,
   "window": {

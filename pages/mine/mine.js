@@ -247,7 +247,7 @@ Page({
   },
 
   openAbout() {
-    wx.showToast({ title: '箭证 v1.0.0', icon: 'none' })
+    wx.navigateTo({ url: '/pages/about/about' })
   },
 
   onShareAppMessage() {
