@@ -56,7 +56,7 @@
       <view class="es-icon">🏹</view>
       <text class="es-title">还没有其他箭友</text>
       <text class="es-desc">邀请你的弓箭伙伴加入\n一起记录训练、共同进步</text>
-      <button class="es-btn" bindtap="shareApp">邀请好友</button>
+      <button class="es-btn" open-type="share">邀请好友</button>
     </view>
 
     <!-- 用户列表 -->

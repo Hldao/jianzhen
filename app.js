@@ -62,6 +62,16 @@ App({
     }
   },
 
+  // 通用分享配置：每个 Page 的 onShareAppMessage / onShareTimeline 调用
+  // 用法：onShareAppMessage() { return getApp().defaultShare() }
+  defaultShare(opts = {}) {
+    return {
+      title: opts.title || '箭证 · 用数据陪你练好每一支箭',
+      path:  opts.path  || '/pages/index/index',
+      imageUrl: opts.imageUrl,  // undefined 时微信用页面默认截图
+    }
+  },
+
   globalData: {
     userInfo:        null,
     needOnboarding:  false,  // 首次/资料空时为 true，触发 index 首页弹 onboarding 引导

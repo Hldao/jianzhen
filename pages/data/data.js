@@ -400,4 +400,8 @@ Page({
   goTraining() {
     wx.navigateTo({ url: '/pages/training/training' })
   },
+
+  onShareAppMessage() {
+    return getApp().defaultShare()
+  },
 })

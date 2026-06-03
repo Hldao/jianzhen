@@ -128,12 +128,13 @@
       <view class="lc lc-sm lc-gray lc-chevron-right"></view>
     </view>
     <view class="menu-divider"></view>
-    <view class="menu-item" bindtap="shareApp">
+    <view class="menu-item menu-item-share">
       <view class="menu-icon" style="background:linear-gradient(135deg,#10B981,#34D399);">
         <view class="lc lc-md lc-white lc-share"></view>
       </view>
       <text class="menu-label">邀请好友</text>
       <view class="lc lc-sm lc-gray lc-chevron-right"></view>
+      <button class="share-overlay-btn" open-type="share"></button>
     </view>
     <view class="menu-divider"></view>
     <view class="menu-item" bindtap="openAbout">

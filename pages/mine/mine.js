@@ -250,8 +250,12 @@ Page({
     wx.showToast({ title: '箭证 v1.0.0', icon: 'none' })
   },
 
-  shareApp() {
-    wx.showShareMenu({ withShareTicket: true, menus: ['shareAppMessage'] })
+  onShareAppMessage() {
+    return getApp().defaultShare({ title: '一起用箭证记录训练，比比谁进步快' })
+  },
+
+  onShareTimeline() {
+    return { title: '箭证 · 用数据陪你练好每一支箭', query: '' }
   },
 
 })

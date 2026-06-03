@@ -701,4 +701,8 @@ Page({
     if (s <= warnAt) return 'warning'
     return 'normal'
   },
+
+  onShareAppMessage() {
+    return getApp().defaultShare()
+  },
 })

@@ -473,9 +473,12 @@ Page({
     wx.navigateTo({ url: '/pages/explore/explore' })
   },
 
-  // 空状态引导：分享 App
-  shareApp() {
-    wx.showShareMenu({ withShareTicket: true, menus: ['shareAppMessage'] })
+  onShareAppMessage() {
+    return getApp().defaultShare({ title: '箭证 · 跟我一起把训练数据用起来' })
+  },
+
+  onShareTimeline() {
+    return { title: '箭证 · 用数据陪你练好每一支箭', query: '' }
   },
 
   // 切换 Tab

@@ -236,4 +236,8 @@ Page({
   },
 
   noop() {},
+
+  onShareAppMessage() {
+    return getApp().defaultShare()
+  },
 })

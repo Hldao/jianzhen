@@ -168,7 +168,7 @@
 
 <!-- ── 分享预览弹层 ── -->
 <view wx:if="{{showShare}}" class="share-modal" catchtap="dismissShare">
-  <view class="share-modal-card" catchtap="">
+  <view class="share-modal-card" catchtap="noop">
     <image wx:if="{{shareImagePath}}" class="share-preview-img" src="{{shareImagePath}}" mode="widthFix" show-menu-by-longpress="{{true}}"></image>
     <text class="share-preview-hint">长按图片可直接转发；或点击下方保存到相册再发朋友圈</text>
     <view class="share-modal-btns">

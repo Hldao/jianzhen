@@ -133,7 +133,7 @@
       <text class="fe-desc">完成第一次训练后\n你的成绩会出现在这里</text>
       <view class="fe-actions">
         <button class="fe-btn-primary" bindtap="openTraining">开始训练</button>
-        <button class="fe-btn-secondary" bindtap="shareApp">邀请好友</button>
+        <button class="fe-btn-secondary" open-type="share">邀请好友</button>
       </view>
     </view>
 
@@ -189,12 +189,13 @@
       </view>
 
       <!-- 邀请好友卡 -->
-      <view class="feed-invite" bindtap="shareApp">
+      <view class="feed-invite">
         <view class="fi-icon">
           <view class="lc lc-sm lc-green lc-users"></view>
         </view>
         <text class="fi-txt">还有好友在练箭，邀请他们加入</text>
         <view class="fi-btn">邀请</view>
+        <button class="share-overlay-btn" open-type="share"></button>
       </view>
     </block>
   </view>

@@ -68,8 +68,8 @@ Page({
     }
   },
 
-  shareApp() {
-    wx.showShareMenu({ withShareTicket: true, menus: ['shareAppMessage'] })
+  onShareAppMessage() {
+    return getApp().defaultShare({ title: '在箭证发现你的箭友，加入俱乐部一起练' })
   },
 
   // ── 俱乐部 · 分页上滑加载 ────────────────────────────────────────

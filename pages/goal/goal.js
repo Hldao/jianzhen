@@ -110,4 +110,8 @@ Page({
   goBack() {
     wx.navigateBack()
   },
+
+  onShareAppMessage() {
+    return getApp().defaultShare()
+  },
 })

@@ -73,4 +73,10 @@ Page({
   },
 
   goBack() { wx.navigateBack() },
+
+  onShareAppMessage() {
+    const u = this.data.user
+    const title = u && u.nickName ? `${u.nickName} 正在用箭证记录训练` : '箭证 · 用数据陪你练好每一支箭'
+    return getApp().defaultShare({ title })
+  },
 })

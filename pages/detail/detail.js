@@ -371,4 +371,14 @@ Page({
     if (line) lines.push(line)
     return lines
   },
+
+  noop() {},
+
+  onShareAppMessage() {
+    const r = this.data.record
+    const title = r
+      ? `我在 ${r.distance} 打出了 ${r.totalScore} 环（${r.totalArrows} 支）— 来箭证看看`
+      : '箭证 · 用数据陪你练好每一支箭'
+    return getApp().defaultShare({ title })
+  },
 })

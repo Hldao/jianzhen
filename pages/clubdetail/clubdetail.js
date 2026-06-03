@@ -87,4 +87,10 @@ Page({
   },
 
   goBack() { wx.navigateBack() },
+
+  onShareAppMessage() {
+    const c = this.data.club
+    const title = c ? `${c.name} · 来箭证看看这个俱乐部` : '箭证 · 用数据陪你练好每一支箭'
+    return getApp().defaultShare({ title })
+  },
 })
