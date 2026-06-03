@@ -82,6 +82,19 @@
       产品还在打磨中，如果你在使用中遇到问题、或者有功能建议，欢迎告诉我们。
       你的反馈会直接影响箭证的下一个版本。
     </text>
+
+    <!-- 主入口：微信官方反馈 -->
+    <view class="contact-row contact-row-primary">
+      <view class="contact-icon contact-icon-feedback">📮</view>
+      <view class="contact-info">
+        <text class="contact-label">问题反馈</text>
+        <text class="contact-value-sub">通过微信官方反馈通道</text>
+      </view>
+      <view class="contact-action">前往</view>
+      <button class="row-overlay-btn" open-type="feedback"></button>
+    </view>
+
+    <!-- 副入口：开发者微信号 -->
     <view class="contact-row" bindtap="copyWechat">
       <view class="contact-icon">💬</view>
       <view class="contact-info">
