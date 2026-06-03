@@ -153,6 +153,7 @@
           class="feed-avatar feed-avatar-img"
           src="{{item.user.avatarUrl}}"
           mode="aspectFill"
+          lazy-load="{{true}}"
         ></image>
         <view wx:else class="feed-avatar feed-avatar-txt">
           <text>{{item.user.nickName[0]}}</text>

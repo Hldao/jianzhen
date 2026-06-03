@@ -76,6 +76,7 @@
           class="user-avatar user-avatar-img"
           src="{{item.avatarUrl}}"
           mode="aspectFill"
+          lazy-load="{{true}}"
         ></image>
         <view wx:else class="user-avatar user-avatar-txt">
           <text>{{item.nickName[0]}}</text>

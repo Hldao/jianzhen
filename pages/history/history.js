@@ -64,12 +64,16 @@ function buildChartData(records, range, metric) {
   return { pts, ma, min: minV, max: maxV, trend }
 }
 
+const PAGE_SIZE = 20
+
 Page({
   data: {
     statusBarHeight: 20,
     navBarHeight: 44,
     loading: false,
-    records: [],
+    records: [],            // 全量记录（用于 stats + chart 计算）
+    displayRecords: [],     // 实际列表渲染用（分批，避免 100+ 卡片一次 setData）
+    displayCount: PAGE_SIZE,
     totalSessions: 0,
     totalArrows: 0,
     overallAvg: 0,
@@ -134,8 +138,24 @@ Page({
     const totalScore    = records.reduce((s, r) => s + r.totalScore, 0)
     const overallAvg    = totalArrows > 0 ? Math.round(totalScore / totalArrows * 10) / 10 : 0
     const bestEnd       = records.reduce((b, r) => r.bestEndTotal > b ? r.bestEndTotal : b, 0)
-    this.setData({ records, totalSessions, totalArrows, overallAvg, bestEnd }, () => {
+    // 列表分批渲染：初始只显示前 PAGE_SIZE 条卡片（避免一次 setData 100+ 卡片）
+    const displayCount = this.data.displayCount || PAGE_SIZE
+    const displayRecords = records.slice(0, displayCount)
+    this.setData({
+      records, displayRecords,
+      totalSessions, totalArrows, overallAvg, bestEnd,
+    }, () => {
       this._drawChart()
+    })
+  },
+
+  // 上滑加载更多 · 从 records 全量中分批 slice 进 displayRecords
+  onScrollToLower() {
+    const newCount = Math.min(this.data.displayCount + PAGE_SIZE, this.data.records.length)
+    if (newCount <= this.data.displayCount) return
+    this.setData({
+      displayCount: newCount,
+      displayRecords: this.data.records.slice(0, newCount),
     })
   },
 

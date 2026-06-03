@@ -188,29 +188,32 @@ Page({
     const cached = wx.getStorageSync('training_history') || []
     if (cached.length > 0) this.setData(computeHomeData(cached))
 
-    try {
-      const api = require('../../utils/cloud')
-      const res = await api.training.list({ limit: 60 })
-      wx.setStorageSync('training_history', res.records)
-      this.setData(computeHomeData(res.records))
+    // 训练记录 + 未读通知数 并行拉取（之前串行造成首屏白屏 ~ 1.5s）
+    // Promise.allSettled 让一个失败不影响另一个
+    const api = require('../../utils/cloud')
+    const [trainRes, notifRes] = await Promise.allSettled([
+      api.training.list({ limit: 60 }),
+      api.social.getUnreadCount(),
+    ])
 
-      // 同步拉取未读通知数（用于底部 tab 徽章）
-      const notifRes = await api.social.getUnreadCount()
-      if (notifRes.count > 0) {
-        wx.setTabBarBadge({ index: 2, text: String(notifRes.count) })
-      } else {
-        wx.removeTabBarBadge({ index: 2 })
-      }
-    } catch (e) {
-      // 云端失败时回退到本地缓存，保证离线也能看到数据
+    if (trainRes.status === 'fulfilled' && trainRes.value.records) {
+      wx.setStorageSync('training_history', trainRes.value.records)
+      this.setData(computeHomeData(trainRes.value.records))
+    } else {
       const stored = wx.getStorageSync('training_history') || []
       this.setData(computeHomeData(stored))
+    }
+
+    if (notifRes.status === 'fulfilled' && notifRes.value && notifRes.value.count > 0) {
+      wx.setTabBarBadge({ index: 2, text: String(notifRes.value.count) })
+    } else {
+      wx.removeTabBarBadge({ index: 2 })
     }
 
     // 训练目标（本地读取，无需网络）
     this._loadGoal()
 
-    // 拉取箭友动态（不阻塞主流程）
+    // 拉取箭友动态（不阻塞主流程，async 函数 fire-and-forget）
     this._loadFeed()
 
     // 首次进入 → 引导用户授权头像 + 昵称

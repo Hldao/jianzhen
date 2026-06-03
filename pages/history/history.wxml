@@ -12,6 +12,8 @@
 <scroll-view
   scroll-y enhanced show-scrollbar="{{false}}"
   class="scroll-body"
+  bindscrolltolower="onScrollToLower"
+  lower-threshold="200"
   style="top:calc({{statusBarHeight}}px + {{navBarHeight}}px);"
 >
 
@@ -79,7 +81,7 @@
 
   <!-- 记录列表：整卡可点 -->
   <view
-    wx:for="{{records}}" wx:key="_id"
+    wx:for="{{displayRecords}}" wx:key="_id"
     class="record-card"
     hover-class="record-card-pressed"
     hover-stay-time="150"
