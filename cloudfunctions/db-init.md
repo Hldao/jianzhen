@@ -89,7 +89,9 @@
 | `likes`      | number | 点赞数，默认 0           |
 | `createdAt`  | date   |                         |
 
-**索引**：`_openid + ts`（降序）
+**索引**：
+- `_openid + ts`（降序，查个人公开动态）
+- `ts`（降序，**关键**：首页 getPublicFeed 跨用户按时间排序，缺此索引会触发全表扫描）
 
 ---
 
@@ -124,7 +126,9 @@
 | `clubId`  | string | clubs 文档 _id       |
 | `joinedAt`| date   | 加入时间              |
 
-**索引**：`_openid + clubId`（唯一）
+**索引**：
+- `_openid + clubId`（唯一，防重复加入）
+- `clubId + joinedAt`（升序，**关键**：俱乐部详情按加入时间列成员）
 
 ---
 

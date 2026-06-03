@@ -315,16 +315,25 @@ app.globalData.navBarHeight
 `training.save` 更新分支（含 _id）必须先 `doc(_id).get()` 校验 `_openid === openid`，否则返回 403。`social_feed` 同步更新也要带 `_openid` 条件，防止改他人动态备注。
 
 ### 15. 云函数错误兜底
-`social/index.js` 顶层 try/catch 把异常包成 `{ code: 500, msg, stack }` 返回，前端能直接 Console 看到，不被静默吞掉。其他云函数尚未统一，是已知技术债。
+全部业务云函数（`user` / `training` / `social` / `goal`）统一用 dispatch + 顶层 try/catch 模式，异常包成 `{ code: 500, msg, stack }` 返回。前端 cloud.js 按 code 分流，错误直接 Console 可见，不会被静默吞掉。
 
-### 16. 隐私协议涉及的接口边界
+### 16. 列表分页与 image lazy-load
+所有可能产生 100+ 条目的列表都做了上滑分页（首页 feed / explore 箭友+俱乐部 / clubdetail 成员 / history 记录）。WXML 的 `<image>` 加 `lazy-load="{{true}}"`，仅渲染视口内头像。history 用 `displayRecords` 分批渲染模式（records 算 stats，displayRecords 渲列表）。
+
+### 17. 5 分钟内存缓存
+`userprofile` / `clubdetail` 使用 `globalData.userProfileCache` / `clubDetailCache` 做 5 分钟内存缓存，避免短时间内重复进出页面时反复请求云端。toggleJoin 同步更新缓存。
+
+### 18. 首次启动引导授权
+`app.js _initUser` 检测 `isNew || !nickName || !avatarUrl` + 未存过 `onboarding_done` 时设 `globalData.needOnboarding=true`，首页 onShow 弹层引导用户用 `<button open-type="chooseAvatar">` 和 `<input type="nickname">` 完成头像/昵称授权（微信新规要求用户主动触发，不能自动弹窗）。
+
+### 19. 隐私协议涉及的接口边界
 微信审核会扫描代码识别敏感接口。当前主流程涉及：
 - `wx.saveImageToPhotosAlbum`（detail.js 分享卡保存到相册）→ 协议须写「相册（仅写入）」
 - `open-type="chooseAvatar"` + `type="nickname"`（profile.wxml）→ 协议须写「微信昵称、头像」
 
 ---
 
-## 当前开发状态（2026-05-22）
+## 当前开发状态（2026-06-03）
 
 ### 已完成 ✅
 - 完整训练录入流程（积分赛/淘汰赛/自由练习）
@@ -345,15 +354,27 @@ app.globalData.navBarHeight
 - 首页冷启动白屏优化（本地缓存先渲染，云端数据后覆盖）
 - 数据库一键初始化 `init` 云函数（建集合 + 历史记录回填 social_feed）
 - 上线前体检：数据迁移幂等 / 点赞互斥锁 / 通知徽章清除 / 训练记录权限校验 / 长文本截断（5 处页面）
+- **2026-06 优化轮次**（6 轮 commit）：
+  - 云函数全量统一 dispatch + 顶层 try/catch（user/training/goal/social）
+  - 列表分页：index feed / explore 箭友+俱乐部 / clubdetail 成员 / history 记录
+  - history `displayRecords` 分批渲染模式（records 算 stats，displayRecords 渲列表）
+  - WXML `<image>` 全面 `lazy-load`（feed/explore/clubdetail 头像）
+  - userprofile + clubdetail 5 分钟内存缓存（globalData，toggleJoin 同步更新）
+  - 首页 onShow 串行 await 改 `Promise.allSettled` 并行（首屏 ↓ ~1.5s）
+  - 首次启动弹层引导授权头像/昵称（用 button + nickname input，符合微信新规）
+  - 俱乐部切换失败 UI 回滚 + 多处 timer 退出清理（避免 setData on dead page）
 
 ### 待开发 📋
 - 社交关注功能（`follows` 集合已建，UI 未开发）
+- 错误处理统一：抽 utils/error.js + handleErr 助手，替换 31 处 catch 块（技术债）
+- training.js 抽 utils（738 行单文件，建议拆 utils/training-helper.js）
 
 ### 手动运维步骤（新环境首次部署）
 1. 微信开发者工具上传并部署云函数：`user` / `training` / `social` / `goal` / `init`
 2. 云端测试 `init` 函数（建集合 + 回填历史数据）
 3. 在 mp.weixin.qq.com → 隐私 → 用户隐私保护指引 中填写隐私协议
 4. 云数据库 → 对应集合建索引（参见 `cloudfunctions/db-init.md`）
+   - **关键索引（性能强相关）**：`social_feed.ts desc`（首页公开流）、`club_members.clubId + joinedAt asc`（俱乐部成员列表）
 
 ---
 
