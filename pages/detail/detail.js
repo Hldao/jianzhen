@@ -55,6 +55,8 @@ Page({
 
   onUnload() {
     getApp().globalData.currentRecord = null
+    // 清理保存到相册成功后的延迟 hide 计时器，避免 setData on dead page
+    if (this._hideShareTimer) clearTimeout(this._hideShareTimer)
   },
 
   _processRecord(record) {
@@ -188,7 +190,7 @@ Page({
     try {
       await wx.saveImageToPhotosAlbum({ filePath })
       wx.showToast({ title: '已保存到相册', icon: 'success' })
-      setTimeout(() => this.setData({ showShare: false }), 800)
+      this._hideShareTimer = setTimeout(() => this.setData({ showShare: false }), 800)
     } catch (e) {
       const msg = (e && e.errMsg) || ''
       if (msg.indexOf('auth deny') >= 0 || msg.indexOf('authorize') >= 0 || msg.indexOf('authSetting') >= 0) {

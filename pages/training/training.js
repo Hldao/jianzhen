@@ -241,6 +241,7 @@ Page({
   onUnload() {
     this._clearTimer()
     this._clearReleaseTimer()
+    if (this._dismissMomentTimer) clearTimeout(this._dismissMomentTimer)
   },
 
   // ── 参数设置 ────────────────────────────────────────────────────
@@ -609,7 +610,7 @@ Page({
 
   saveMomentCard() {
     wx.showToast({ title: '分享功能开发中', icon: 'none', duration: 1500 })
-    setTimeout(() => this.dismissMoment(), 1600)
+    this._dismissMomentTimer = setTimeout(() => this.dismissMoment(), 1600)
   },
 
   onNoteInput(e) {
