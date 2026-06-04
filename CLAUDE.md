@@ -3,6 +3,9 @@
 > 微信小程序，帮助射箭运动员记录训练、分析数据、连接箭友社区。
 > 一句话定位：**用数据证明每一次进步**。
 
+> 📍 **快速回到状态**：先看 [PROGRESS.md](./PROGRESS.md) —— 包含当前阶段、下一步操作、关键账号、本次 session 的关键决策。
+> 本文档（CLAUDE.md）记录技术细节与架构约定。
+
 ---
 
 ## 技术栈
@@ -338,7 +341,7 @@ app.globalData.navBarHeight
 
 ---
 
-## 当前开发状态（2026-06-03）
+## 当前开发状态（2026-06-04 · v1.1.0 待审核）
 
 ### 已完成 ✅
 - 完整训练录入流程（积分赛/淘汰赛/自由练习）
@@ -370,6 +373,23 @@ app.globalData.navBarHeight
   - 俱乐部切换失败 UI 回滚 + 多处 timer 退出清理（避免 setData on dead page）
   - 错误处理统一：抽 `utils/error.js` 暴露 `handleErr`，9 个页面 16 处 console.warn 全部统一
   - 抽 `utils/training-helper.js`：SCORE_VAL / ARROW_CLS / SLOT_COLORS / calcOpponentLevel / randNormal / fmtSecs / fmtTimeLabel
+- **2026-06-04 提审准备轮**（继续 5 个 commit）：
+  - 修复分享功能：12 个 Page 全部声明 `onShareAppMessage`，4 处「邀请好友」改用 `<button open-type="share">`，index/mine 加 `onShareTimeline`；新增 `app.js defaultShare(opts)` 统一封装
+  - 训练详情添加照片：cloud function `training.updateMedias`，detail.js 新增 addMedia/previewMedia/removeMedia，3 列正方形 grid，最多 9 张，云存储路径 `training-media/${recordId}/`
+  - 训练精彩时刻分享图：training.js 新增 `_renderMomentCanvas` + `_roundRect`，三种主题（perfect/golden/pb）canvas 离屏渲染 → 保存到相册
+  - 新增「关于」页 `pages/about/about`：hero 同心环 logo + slogan「记录每一支箭，看见你的进步」+ 产品介绍 + 核心功能 + 反馈双通道（`button open-type=feedback` 走微信官方反馈 + 开发者微信号 `l380855352` 长按复制）+ `wx.openPrivacyContract` 隐私协议入口
+  - 删 index.js 孤儿 handler `openFeedList`
+
+### 提审前状态（2026-06-04）
+- **隐私协议** ✅ 已配 5 条接口（mp 后台 → 设置 → 用户隐私保护指引）：
+  - 微信昵称/头像、相册（仅写入）、摄像头、剪切板、选中的照片或视频信息
+- **数据库索引** ✅ 已建 2 个性能关键索引：
+  - `social_feed.ts desc`（首页公开流排序）
+  - `club_members.clubId + joinedAt asc`（俱乐部成员列表）
+- **云函数** ✅ training 已重新部署（含 updateMedias action）
+- **云存储** ✅ 默认权限即可（image 标签 + cloud:// 走 getTempFileURL 不受存储权限限制）
+- **下一步**：微信开发者工具 → 上传 v1.1.0 → mp 后台「版本管理 → 开发版本」→ 提交审核
+- **版本描述（< 200 字）** 已沉淀在 [README.md 之外的会话中]：新增训练照片 + 精彩时刻分享海报 + 关于页 + 全页面分享，优化首屏 + 列表分页 + 缓存，修分享菜单与计时器问题
 
 ### 待开发 📋
 - 社交关注功能（`follows` 集合已建，UI 未开发）
