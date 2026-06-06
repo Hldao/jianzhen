@@ -80,26 +80,97 @@ async function updateProfile(openid, updates) {
 }
 
 // ── 注销账号：永久删除该用户全部数据（不可恢复） ──────────────────
-// 云函数有管理员权限，where().remove() 可删除该 openid 名下全部匹配记录
+// 云函数有管理员权限，where().remove() 可删除该 openid 名下全部匹配记录。
+// 性能/完整性约定：
+//   1) 各俱乐部 memberCount 递减 与 多集合删除均走 Promise.all 并发
+//   2) removeAll 循环兜底 .remove() 单次上限，重度用户也能删干净
+//   3) 训练照片 + 头像云存储文件随之清空，满足"全部数据删除"合规要求
 async function deleteAccount(openid) {
-  // 1. 先退出所有俱乐部并修正人数（保持 clubs.memberCount 准确）
+  // Step 1：递减该用户加入的所有俱乐部 memberCount（并发）
   const mem = await db.collection('club_members').where({ _openid: openid }).get()
-  for (const m of mem.data) {
-    if (m.clubId) {
-      await db.collection('clubs').doc(m.clubId)
-        .update({ data: { memberCount: _.inc(-1) } }).catch(() => {})
+  await Promise.all(
+    mem.data
+      .filter(m => m.clubId)
+      .map(m => db.collection('clubs').doc(m.clubId)
+        .update({ data: { memberCount: _.inc(-1) } })
+        .catch(e => console.warn('[deleteAccount] dec memberCount fail:', m.clubId, e && e.message)))
+  )
+
+  // Step 2：收集该用户在云存储里的全部文件路径（删库前先采集）
+  const fileList = await collectUserFiles(openid)
+
+  // Step 3：并发删 6 个业务集合，每个内部循环兜底 5000 上限
+  await Promise.all([
+    removeAll('club_members',     { _openid: openid }),
+    removeAll('feed_likes',       { _openid: openid }),
+    removeAll('follows',          { _openid: openid }),
+    removeAll('user_goals',       { _openid: openid }),
+    removeAll('social_feed',      { _openid: openid }),
+    removeAll('training_records', { _openid: openid }),
+  ])
+
+  // Step 4：最后删账号资料本身
+  await db.collection('users').where({ _openid: openid }).remove()
+
+  // Step 5：批量删云存储文件（cloud.deleteFile 单次最多 50 个）
+  await deleteCloudFiles(fileList)
+
+  return { code: 0 }
+}
+
+// 循环删除：处理云函数侧 .remove() 单次 5000 条上限
+async function removeAll(name, where) {
+  let total = 0
+  while (true) {
+    const res = await db.collection(name).where(where).remove()
+    const removed = (res.stats && res.stats.removed) || 0
+    total += removed
+    if (removed === 0) break
+  }
+  return total
+}
+
+// 收集该用户在云存储中的全部文件路径：训练照片 + 头像
+async function collectUserFiles(openid) {
+  const list = []
+  const PAGE = 1000
+  let skip = 0
+  while (true) {
+    const res = await db.collection('training_records')
+      .where({ _openid: openid })
+      .field({ medias: true })
+      .skip(skip).limit(PAGE)
+      .get()
+    for (const r of res.data) {
+      if (Array.isArray(r.medias)) {
+        for (const f of r.medias) {
+          if (typeof f === 'string' && f.indexOf('cloud://') === 0) list.push(f)
+        }
+      }
+    }
+    if (res.data.length < PAGE) break
+    skip += PAGE
+  }
+  const userRes = await db.collection('users')
+    .where({ _openid: openid })
+    .field({ avatarUrl: true })
+    .get()
+  for (const u of userRes.data) {
+    if (typeof u.avatarUrl === 'string' && u.avatarUrl.indexOf('cloud://') === 0) {
+      list.push(u.avatarUrl)
     }
   }
-  // 2. 删除该用户在各集合的全部数据
-  await db.collection('club_members').where({ _openid: openid }).remove()
-  await db.collection('feed_likes').where({ _openid: openid }).remove()
-  await db.collection('follows').where({ _openid: openid }).remove()
-  await db.collection('user_goals').where({ _openid: openid }).remove()
-  await db.collection('social_feed').where({ _openid: openid }).remove()
-  await db.collection('training_records').where({ _openid: openid }).remove()
-  // 3. 最后删账号资料本身
-  await db.collection('users').where({ _openid: openid }).remove()
-  return { code: 0 }
+  return list
+}
+
+// 批量删云存储文件（cloud.deleteFile 单次最多 50 个，分批）
+async function deleteCloudFiles(fileList) {
+  if (!fileList.length) return
+  for (let i = 0; i < fileList.length; i += 50) {
+    const batch = fileList.slice(i, i + 50)
+    await cloud.deleteFile({ fileList: batch })
+      .catch(e => console.warn('[deleteAccount] deleteFile batch fail:', e && e.message))
+  }
 }
 
 // ── 综合统计（训练次数、最高分、箭友数） ─────────────────────────

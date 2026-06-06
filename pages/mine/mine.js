@@ -265,12 +265,19 @@ Page({
           await api.user.deleteAccount()
           // 清空全部本地数据，回到「从未登录」的全新状态
           wx.clearStorageSync()
+          // 清 globalData 的 5 分钟内存缓存（userProfileCache / clubDetailCache），
+          // 否则注销后立即看俱乐部/箭友会读到旧 isJoined 状态
+          const app = getApp()
+          app.globalData.userInfo = null
+          app.globalData.userProfileCache = {}
+          app.globalData.clubDetailCache = {}
+          app.globalData.currentRecord = null
           // 重新登录会创建一个全新的空账号，避免后续页面无用户而报错
           try {
             const res = await api.user.login()
-            getApp().globalData.userInfo = res.user
+            app.globalData.userInfo = res.user
           } catch (e) { /* 离线也无妨，下次启动会重新登录 */ }
-          getApp().globalData.profileDirty = true
+          app.globalData.profileDirty = true
           wx.hideLoading()
           wx.showToast({ title: '账号已注销', icon: 'success' })
           // 重置页面栈，回到首页全新状态
