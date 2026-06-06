@@ -200,7 +200,7 @@ page {
   width: 64rpx; height: 64rpx; border-radius: 16rpx; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
 }
-.menu-label { font-size: 28rpx; font-weight: 500; color: var(--text); }
+.menu-label { flex: 1; font-size: 28rpx; font-weight: 500; color: var(--text); }
 .menu-item-inner { flex: 1; display: flex; flex-direction: column; gap: 4rpx; }
 .menu-item-inner .menu-label { flex: none; }
 .menu-sub-label { font-size: 22rpx; color: var(--text-light); }
