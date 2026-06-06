@@ -199,8 +199,14 @@ Page({
     ])
 
     if (trainRes.status === 'fulfilled' && trainRes.value.records) {
-      wx.setStorageSync('training_history', trainRes.value.records)
-      this.setData(computeHomeData(trainRes.value.records))
+      const cloudRecords = trainRes.value.records
+      // 保留刚结束训练但尚未上传到云端的本地记录（防止短暂消失）· 与 data/history 页保持一致
+      const tsOf = r => (r.ts ?? r.id)
+      const cloudTs = new Set(cloudRecords.map(tsOf))
+      const pendingLocal = cached.filter(r => !cloudTs.has(tsOf(r)))
+      const merged = [...pendingLocal, ...cloudRecords].sort((a, b) => tsOf(b) - tsOf(a))
+      wx.setStorageSync('training_history', merged)
+      this.setData(computeHomeData(merged))
     } else {
       const stored = wx.getStorageSync('training_history') || []
       this.setData(computeHomeData(stored))
