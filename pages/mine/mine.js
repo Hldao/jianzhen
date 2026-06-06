@@ -250,6 +250,40 @@ Page({
     wx.navigateTo({ url: '/pages/about/about' })
   },
 
+  // 注销账号：永久删除账号及全部数据（云端 + 本地），重置为全新状态
+  deleteAccount() {
+    wx.showModal({
+      title: '注销账号',
+      content: '注销后，你的账号资料、训练记录、动态、目标等全部数据将被永久删除，无法恢复。确定注销吗？',
+      confirmText: '注销',
+      confirmColor: '#E63946',
+      success: async (r) => {
+        if (!r.confirm) return
+        wx.showLoading({ title: '注销中…', mask: true })
+        try {
+          const api = require('../../utils/cloud')
+          await api.user.deleteAccount()
+          // 清空全部本地数据，回到「从未登录」的全新状态
+          wx.clearStorageSync()
+          // 重新登录会创建一个全新的空账号，避免后续页面无用户而报错
+          try {
+            const res = await api.user.login()
+            getApp().globalData.userInfo = res.user
+          } catch (e) { /* 离线也无妨，下次启动会重新登录 */ }
+          getApp().globalData.profileDirty = true
+          wx.hideLoading()
+          wx.showToast({ title: '账号已注销', icon: 'success' })
+          // 重置页面栈，回到首页全新状态
+          setTimeout(() => wx.reLaunch({ url: '/pages/index/index' }), 800)
+        } catch (e) {
+          wx.hideLoading()
+          handleErr('mine.deleteAccount', e)
+          wx.showToast({ title: '注销失败，请重试', icon: 'none' })
+        }
+      },
+    })
+  },
+
   onShareAppMessage() {
     return getApp().defaultShare({ title: '一起用箭证记录训练，比比谁进步快' })
   },

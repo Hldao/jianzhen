@@ -144,6 +144,14 @@
       <text class="menu-label">关于箭证</text>
       <view class="lc lc-sm lc-gray lc-chevron-right"></view>
     </view>
+    <view class="menu-divider"></view>
+    <view class="menu-item" bindtap="deleteAccount">
+      <view class="menu-icon" style="background:linear-gradient(135deg,#EF4444,#F87171);">
+        <view class="lc lc-md lc-white lc-circle-x"></view>
+      </view>
+      <text class="menu-label">注销账号</text>
+      <view class="lc lc-sm lc-gray lc-chevron-right"></view>
+    </view>
   </view>
 
   <view class="bottom-safe"></view>

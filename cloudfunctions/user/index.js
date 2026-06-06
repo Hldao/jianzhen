@@ -3,6 +3,7 @@
 const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
+const _  = db.command
 
 exports.main = async (event, context) => {
   const { OPENID } = cloud.getWXContext()
@@ -21,6 +22,7 @@ async function dispatch(OPENID, action, event) {
     case 'getProfile':    return getProfile(OPENID)
     case 'updateProfile': return updateProfile(OPENID, event.data)
     case 'getStats':      return getStats(OPENID)
+    case 'deleteAccount': return deleteAccount(OPENID)
     default:              return { code: 400, msg: 'unknown action' }
   }
 }
@@ -74,6 +76,29 @@ async function updateProfile(openid, updates) {
     .where({ _openid: openid })
     .update({ data: { ...safe, updatedAt: db.serverDate() } })
 
+  return { code: 0 }
+}
+
+// ── 注销账号：永久删除该用户全部数据（不可恢复） ──────────────────
+// 云函数有管理员权限，where().remove() 可删除该 openid 名下全部匹配记录
+async function deleteAccount(openid) {
+  // 1. 先退出所有俱乐部并修正人数（保持 clubs.memberCount 准确）
+  const mem = await db.collection('club_members').where({ _openid: openid }).get()
+  for (const m of mem.data) {
+    if (m.clubId) {
+      await db.collection('clubs').doc(m.clubId)
+        .update({ data: { memberCount: _.inc(-1) } }).catch(() => {})
+    }
+  }
+  // 2. 删除该用户在各集合的全部数据
+  await db.collection('club_members').where({ _openid: openid }).remove()
+  await db.collection('feed_likes').where({ _openid: openid }).remove()
+  await db.collection('follows').where({ _openid: openid }).remove()
+  await db.collection('user_goals').where({ _openid: openid }).remove()
+  await db.collection('social_feed').where({ _openid: openid }).remove()
+  await db.collection('training_records').where({ _openid: openid }).remove()
+  // 3. 最后删账号资料本身
+  await db.collection('users').where({ _openid: openid }).remove()
   return { code: 0 }
 }
 

@@ -29,6 +29,7 @@ const user = {
   getProfile:     ()       => call('user', 'getProfile'),
   updateProfile:  (data)   => call('user', 'updateProfile', { data }),
   getStats:       ()       => call('user', 'getStats'),
+  deleteAccount:  ()       => call('user', 'deleteAccount'),
 }
 
 // ── 训练记录 ──────────────────────────────────────────────────────
