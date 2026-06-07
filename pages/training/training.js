@@ -30,11 +30,11 @@ Page({
       { value: 'barebow',  label: '传统弓' },
       { value: 'longbow',  label: '光弓' },
     ],
-    distance: '70m',
+    distance: '18m',
     distances: ['10m', '18m', '30m', '50m', '70m'],
-    targetSize: '122cm',
+    targetSize: '40cm',
     targetSizes: ['40cm', '60cm', '80全', '80半', '122cm'],
-    targetSizeHint: '',
+    targetSizeHint: '全10环 · 室内18m',
     mode: 'ranking',     // ranking | elimination | custom
     showCustom: false,
     customEnds: 6,
@@ -181,7 +181,7 @@ Page({
         const remaining = Math.max(0, Math.round((target - Date.now()) / 1000))
         if (remaining === 0) {
           this._clearReleaseTimer()
-          wx.vibrateShort && wx.vibrateShort({ type: 'heavy' })
+          wx.vibrateLong && wx.vibrateLong()
         } else {
           this.setData({ releaseSecs: remaining })
           this._startReleaseTimer()
@@ -335,7 +335,7 @@ Page({
       this.setData({ releaseSecs: s, releasePct: pct, releaseDisplay: fmtSecs(s), releaseState: st, releaseRunning: s > 0 })
       if (s === 0) {
         this._clearReleaseTimer()
-        wx.vibrateShort && wx.vibrateShort({ type: 'heavy' })
+        wx.vibrateLong && wx.vibrateLong()
       }
     }, 500)
     this.setData({ releaseRunning: true })

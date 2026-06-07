@@ -333,10 +333,16 @@ page {
   background: rgba(255,107,53,.06);
   box-shadow: 0 0 60rpx rgba(255,107,53,.15);
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 40rpx;
+}
+.spt-num {
+  display: flex;
   align-items: center;
   justify-content: center;
   gap: 6rpx;
-  margin: 0 auto 40rpx;
 }
 .spt-count {
   font-size: 80rpx;
@@ -357,8 +363,7 @@ page {
 .spt-unit {
   font-size: 24rpx;
   color: var(--text-light);
-  align-self: flex-end;
-  padding-bottom: 16rpx;
+  margin-top: 8rpx;
 }
 .spt-tips {
   background: var(--white);
@@ -461,8 +466,9 @@ page {
 }
 .slots-progress {
   text-align: center;
-  font-size: 22rpx;
-  color: var(--text-light);
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--text-mid);
   display: block;
 }
 
@@ -501,8 +507,9 @@ page {
   line-height: 1;
 }
 .pad-sub {
-  font-size: 20rpx;
-  color: rgba(255,255,255,.7);
+  font-size: 22rpx;
+  font-weight: 600;
+  color: rgba(255,255,255,.9);
   margin-top: 4rpx;
 }
 .pad-num-dark { color: #1A1A2E; }
@@ -532,9 +539,11 @@ page {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8rpx;
   border-radius: 20rpx;
   background: var(--white);
-  font-size: 26rpx;
+  font-size: 28rpx;
+  font-weight: 600;
   color: var(--text-mid);
   box-shadow: 0 4rpx 16rpx rgba(0,0,0,.06);
 }
@@ -544,6 +553,7 @@ page {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8rpx;
   border-radius: 20rpx;
   background: linear-gradient(135deg, #FF6B35, #FF8F5E);
   font-size: 28rpx;
@@ -677,6 +687,12 @@ page {
   background: linear-gradient(135deg, #059669, #10B981);
   box-shadow: 0 8rpx 24rpx rgba(5,150,105,.3);
 }
+/* SPT 空拉「记录一支」属高频点按：加大面积，戴护指/手机置物架也好戳 */
+.btn-spt-record {
+  height: 180rpx;
+  border-radius: 32rpx;
+  font-size: 38rpx;
+}
 .btn-skip {
   width: 100%;
   height: 72rpx;
@@ -691,47 +707,70 @@ page {
 
 /* ── 计时器 ─────────────────────────────────── */
 .timer-row {
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
-  gap: 16rpx;
-  padding: 14rpx 28rpx;
-  background: var(--white);
+  justify-content: space-between;
+  height: 64rpx;
+  padding: 0 28rpx;
+  background: #EEF2F8;
   border-bottom: 1rpx solid var(--border);
   flex-shrink: 0;
 }
+/* 进度作为整条实心填充背景，时间/标签叠在上层（更显眼、不额外占高度）*/
+.timer-fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: rgba(16,185,129,.22);
+  transition: width 1s linear, background .3s;
+  z-index: 0;
+}
 .timer-display-txt {
+  position: relative;
+  z-index: 1;
   font-size: 34rpx;
   font-weight: 800;
   color: #10B981;
-  min-width: 90rpx;
   font-feature-settings: "tnum";
   letter-spacing: 1rpx;
 }
-.timer-track {
-  flex: 1;
-  height: 8rpx;
-  background: #E8ECF2;
-  border-radius: 4rpx;
-  overflow: hidden;
-}
-.timer-fill {
-  height: 100%;
-  border-radius: 4rpx;
-  background: #10B981;
-  transition: width 1s linear, background .3s;
-}
 .timer-label-tag {
-  font-size: 20rpx;
-  color: var(--text-light);
-  min-width: 60rpx;
+  position: relative;
+  z-index: 1;
+  font-size: 22rpx;
+  font-weight: 600;
+  color: var(--text-mid);
   text-align: right;
+}
+/* 未开始：大启动按钮（替代无意义的横条，醒目好点）*/
+.timer-start-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16rpx;
+  height: 104rpx;
+  margin: 16rpx 28rpx;
+  background: linear-gradient(135deg, #FF6B35, #FF8F5E);
+  color: #fff;
+  border-radius: 20rpx;
+  font-weight: 700;
+  box-shadow: 0 6rpx 20rpx rgba(255,107,53,.3);
+}
+.tsb-icon { font-size: 28rpx; }
+.tsb-txt  { font-size: 34rpx; letter-spacing: 1rpx; }
+.tsb-time {
+  font-size: 26rpx;
+  font-weight: 600;
+  opacity: .85;
+  font-feature-settings: "tnum";
 }
 /* 警告状态 */
 .timer-row.timer-warning .timer-display-txt { color: #F59E0B; }
-.timer-row.timer-warning .timer-fill { background: #F59E0B; }
+.timer-row.timer-warning .timer-fill { background: rgba(245,158,11,.22); }
 /* 紧急状态 */
 .timer-row.timer-critical .timer-display-txt { color: #EF4444; }
-.timer-row.timer-critical .timer-fill { background: #EF4444; }
+.timer-row.timer-critical .timer-fill { background: rgba(239,68,68,.25); }
 
 /* 待命状态：等待手动开始 */
 @keyframes timerPulse {
@@ -753,10 +792,10 @@ page {
 
 /* ── 撒放练习计时环（与 spt-ring 同级） ────── */
 .release-ring {
-  width: 280rpx;
-  height: 280rpx;
+  width: 320rpx;
+  height: 320rpx;
   border-radius: 50%;
-  border: 12rpx solid #10B981;
+  border: 14rpx solid #10B981;
   background: rgba(16,185,129,.06);
   box-shadow: 0 0 60rpx rgba(16,185,129,.15);
   display: flex;
@@ -764,10 +803,33 @@ page {
   align-items: center;
   justify-content: center;
   margin: 0 auto 40rpx;
-  transition: border-color .3s, background .3s, box-shadow .3s;
+  transition: width .35s ease, height .35s ease, border-color .3s, background .3s, box-shadow .3s;
+}
+/* 计时中：放大占屏 + 实心填充 + 白字，手机在置物架上用余光也能辨认 */
+.release-ring.is-running {
+  width: 480rpx;
+  height: 480rpx;
+  background: #10B981;
+  box-shadow: 0 0 90rpx rgba(16,185,129,.4);
+}
+.release-ring.is-running .release-ring-time { font-size: 140rpx; color: #fff; }
+.release-ring.is-running .release-ring-lbl  { color: rgba(255,255,255,.92); }
+.release-ring.is-running.release-ring-warning {
+  background: #F59E0B;
+  box-shadow: 0 0 90rpx rgba(245,158,11,.45);
+}
+.release-ring.is-running.release-ring-critical {
+  background: #EF4444;
+  box-shadow: 0 0 90rpx rgba(239,68,68,.5);
+  animation: releaseBlink .7s ease-in-out infinite;
+}
+/* 临近结束整圈闪烁，提示快到时 */
+@keyframes releaseBlink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: .4; }
 }
 .release-ring-time {
-  font-size: 68rpx;
+  font-size: 100rpx;
   font-weight: 900;
   color: #10B981;
   line-height: 1;
@@ -775,7 +837,7 @@ page {
   transition: color .3s;
 }
 .release-ring-lbl {
-  font-size: 22rpx;
+  font-size: 26rpx;
   color: rgba(16,185,129,.7);
   margin-top: 8rpx;
   transition: color .3s;

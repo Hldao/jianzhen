@@ -201,9 +201,11 @@
   <view class="step-sub">无箭或贴墙，重复完整动作循环，不需要真实撒放</view>
 
   <view class="spt-ring">
-    <text class="spt-count">{{sptCount}}</text>
-    <text class="spt-slash">/</text>
-    <text class="spt-target">{{sptTarget}}</text>
+    <view class="spt-num">
+      <text class="spt-count">{{sptCount}}</text>
+      <text class="spt-slash">/</text>
+      <text class="spt-target">{{sptTarget}}</text>
+    </view>
     <text class="spt-unit">次</text>
   </view>
 
@@ -214,7 +216,7 @@
     <text>· 每次间隔 10 秒，追求每次重复的动作完全一致</text>
   </view>
 
-  <button class="btn-primary" bindtap="recordSpt">
+  <button class="btn-primary btn-spt-record" bindtap="recordSpt">
     记录一支（{{sptCount}}/{{sptTarget}}）
   </button>
   <button
@@ -257,19 +259,29 @@
   </view>
 
   <!-- 计时器 -->
-  <view
-    wx:if="{{timerTotal > 0}}"
-    class="timer-row timer-{{timerState}} {{!timerRunning && !isEndDone && !timerElimArrow ? 'timer-ready' : ''}}"
-    bindtap="tapTimer"
-  >
-    <text class="timer-display-txt">{{timerDisplay}}</text>
-    <view class="timer-track">
-      <view class="timer-fill" style="width:{{timerPct}}%"></view>
+  <block wx:if="{{timerTotal > 0}}">
+    <!-- 未开始：横条此时无意义，整条让位给醒目的大启动按钮 -->
+    <view
+      wx:if="{{!timerRunning && !isEndDone && !timerElimArrow}}"
+      class="timer-start-btn"
+      bindtap="tapTimer"
+    >
+      <text class="tsb-icon">▶</text>
+      <text class="tsb-txt">就位后点击开始</text>
+      <text class="tsb-time">{{timerDisplay}}</text>
     </view>
-    <view wx:if="{{timerElimArrow}}" class="timer-label-tag">本箭</view>
-    <view wx:elif="{{!timerRunning && !isEndDone}}" class="timer-start-hint">▶ 就位后点击</view>
-    <view wx:else class="timer-label-tag"></view>
-  </view>
+    <!-- 计时中 / 已完成 / 淘汰赛每箭：时间 + 进度横条 -->
+    <view
+      wx:else
+      class="timer-row timer-{{timerState}}"
+      bindtap="tapTimer"
+    >
+      <view class="timer-fill" style="width:{{timerPct}}%"></view>
+      <text class="timer-display-txt">{{timerDisplay}}</text>
+      <view wx:if="{{timerElimArrow}}" class="timer-label-tag">本箭</view>
+      <view wx:else class="timer-label-tag"></view>
+    </view>
+  </block>
 
   <!-- 箭槽区 -->
   <view class="slots-section">
@@ -347,9 +359,13 @@
 
     <!-- 操作行 -->
     <view class="act-row">
-      <view class="btn-undo" bindtap="deleteLastArrow">← 撤销</view>
+      <view class="btn-undo" bindtap="deleteLastArrow">
+        <view class="lc lc-sm lc-circle-x" style="background-color:#64748B;"></view>
+        <text>撤销</text>
+      </view>
       <view wx:if="{{isEndDone}}" class="btn-next-end" bindtap="nextEnd">
-        下一{{endUnit}} →
+        <text>下一{{endUnit}}</text>
+        <view class="lc lc-sm lc-chevron-right" style="background-color:#fff;"></view>
       </view>
     </view>
 
@@ -456,14 +472,14 @@
   <view class="step-h1">撒放专项练习</view>
   <view class="step-sub">有箭对靶（短距离或空靶），专注撒放瞬间的手指感受</view>
 
-  <view class="release-ring release-ring-{{releaseState}}">
+  <view class="release-ring release-ring-{{releaseState}} {{releaseRunning ? 'is-running' : ''}}">
     <text class="release-ring-time">{{releaseDisplay}}</text>
     <text class="release-ring-lbl">{{releaseRunning ? '计时中' : releaseSecs===300 ? '5 分钟' : releaseSecs===0 ? '完成！' : '已暂停'}}</text>
   </view>
 
   <view class="spt-tips">
     <text>· 手指"被动张开"——让弓弦推离手指，不要主动拨弦</text>
-    <text>· 撒放后弓臂保持延伸 2 秒，不急于低弓看落点（follow-through）</text>
+    <text>· 撒放后弓臂保持延伸 2 秒，不急于低弓看落点</text>
     <text>· 撒放时手指自然放松，不要主动拨弦</text>
     <text>· 感受肩胛骨向脊椎夹紧，配合撒放延伸</text>
   </view>

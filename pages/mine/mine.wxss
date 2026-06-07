@@ -129,7 +129,8 @@ page {
 .ach-detail-card {
   width: 100%; background: var(--white);
   border-radius: 36rpx 36rpx 0 0;
-  padding: 48rpx 40rpx calc(env(safe-area-inset-bottom) + 48rpx);
+  /* 底部留出自定义 tabBar 高度(50px)，否则抽屉底部内容被 tabBar 遮挡 */
+  padding: 48rpx 40rpx calc(env(safe-area-inset-bottom) + 50px + 48rpx);
   display: flex; flex-direction: column; align-items: center;
   position: relative;
 }
