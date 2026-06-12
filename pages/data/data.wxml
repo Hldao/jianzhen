@@ -70,8 +70,8 @@
       </view>
       <view class="ss-vline"></view>
       <view class="ss-item">
-        <text class="ss-num">{{bestEnd}}</text>
-        <text class="ss-lbl">单轮最高</text>
+        <text class="ss-num">{{bestScoreDisplay}}</text>
+        <text class="ss-lbl">排位最高</text>
       </view>
     </view>
 

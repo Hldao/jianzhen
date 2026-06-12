@@ -103,7 +103,10 @@ function computeDataPage(records) {
   const totalArrows   = records.reduce((s, r) => s + r.totalArrows, 0)
   const totalScore2   = records.reduce((s, r) => s + r.totalScore, 0)
   const overallAvg    = totalArrows > 0 ? Math.round(totalScore2 / totalArrows * 10) / 10 : 0
-  const bestEnd       = records.reduce((b, r) => r.bestEndTotal > b ? r.bestEndTotal : b, 0)
+  // 最高成绩：只取排位赛(72箭整轮)的最高总分。
+  // 排除自定义模式（用户可设 10 值箭/100环，污染口径）；单组最高(≤60)天花板低、意义弱。
+  const rankingScores = records.filter(r => r.mode === '排名赛').map(r => r.totalScore)
+  const bestScore     = rankingScores.length ? Math.max(...rankingScores) : null
 
   // 近期记录（最多 20 条，供折线图和列表使用）
   const sessions = records.slice(0, 20).map(r => ({
@@ -130,7 +133,7 @@ function computeDataPage(records) {
     totalSessions,
     totalArrows,
     overallAvg,
-    bestEnd,
+    bestScoreDisplay: bestScore !== null ? String(bestScore) : '--',
     isEmpty:         records.length === 0,
     isWeekEmpty:     thisWeek.length === 0,
   }
@@ -194,7 +197,7 @@ Page({
     totalSessions: 0,
     totalArrows: 0,
     overallAvg: 0,
-    bestEnd: 0,
+    bestScoreDisplay: '--',
 
     // 本周卡
     weekBestDisplay: '--',
