@@ -1,4 +1,5 @@
 const { handleErr } = require('../../utils/error')
+const sfx = require('../../utils/sfx')
 const {
   SCORE_VAL,
   SLOT_COLORS,
@@ -116,6 +117,7 @@ Page({
     // ── 模拟淘汰赛虚拟对手 ──────────────────────────
     elimDifficulty: 'normal',  // 'easy' | 'normal' | 'hard'
     elimOpponentMean: 21,
+    elimOpponentBest: 24,   // 决胜局用「最强的自己」
     elimOpponentStd: 3,
     elimMyPts: 0,
     elimOppPts: 0,
@@ -130,6 +132,7 @@ Page({
     const sh = app.globalData.statusBarHeight
     const nh = app.globalData.navBarHeight
     this.setData({ statusBarHeight: sh, navBarHeight: nh, navTop: sh + nh })
+    sfx.preload()  // 预热提示音，倒计时催促首播无延迟
 
     const last = wx.getStorageSync('training_last_settings')
     if (last) {
@@ -154,6 +157,7 @@ Page({
         elimDifficulty:     last.elimDifficulty    || 'normal',
       })
     }
+    this._checkRecover()  // 有未完成训练存档则弹窗问是否恢复
   },
 
   // 从后台回到前台：用时间戳重新算剩余秒数，补偿后台耗时
@@ -166,6 +170,7 @@ Page({
         const remaining = Math.max(0, Math.round((target - Date.now()) / 1000))
         if (remaining === 0) {
           this._clearTimer()
+          sfx.end()
           wx.vibrateShort && wx.vibrateShort({ type: 'heavy' })
         } else {
           this.setData({ timerSecs: remaining })
@@ -181,6 +186,7 @@ Page({
         const remaining = Math.max(0, Math.round((target - Date.now()) / 1000))
         if (remaining === 0) {
           this._clearReleaseTimer()
+          sfx.end()
           wx.vibrateLong && wx.vibrateLong()
         } else {
           this.setData({ releaseSecs: remaining })
@@ -190,16 +196,116 @@ Page({
     }
   },
 
-  // 进入后台：停掉 JS interval（后台不执行），但保留 Storage 供 onShow 恢复
+  // 进入后台：停掉 JS interval（后台不执行），但保留 Storage 供 onShow 恢复。
+  // 切屏/接电话一定先触发 onHide，这里把进行中成绩落盘，防系统随后回收页面丢分。
   onHide() {
     if (this._timer) { clearInterval(this._timer); this._timer = null }
     if (this._releaseTimer) { clearInterval(this._releaseTimer); this._releaseTimer = null }
+    this._snapshotActive()
   },
 
   onUnload() {
     this._clearTimer()
     this._clearReleaseTimer()
     if (this._dismissMomentTimer) clearTimeout(this._dismissMomentTimer)
+    sfx.dispose()  // 释放 InnerAudioContext，避免离页后泄漏
+  },
+
+  // ── 进行中训练自动存档 / 恢复（防切屏·接电话被系统回收丢成绩）────────
+  // 只存「记分及之后」(step 3/4/5) 的核心状态；计时器/弹层等瞬态不存，恢复时重算。
+  ACTIVE_KEY: 'training_active',
+  ACTIVE_TTL: 24 * 3600 * 1000,  // 超过 24h 的残档不再提示恢复
+
+  _snapshotActive() {
+    const d = this.data
+    if (d.step < 3 || d.step > 5) return
+    try {
+      wx.setStorageSync(this.ACTIVE_KEY, {
+        v: 1, step: d.step,
+        bowType: d.bowType, distance: d.distance, targetSize: d.targetSize, mode: d.mode,
+        customEnds: d.customEnds, customArrowsPerEnd: d.customArrowsPerEnd,
+        customTimeLimit: d.customTimeLimit, elimDifficulty: d.elimDifficulty,
+        totalEnds: d.totalEnds, arrowsPerEnd: d.arrowsPerEnd, endUnit: d.endUnit,
+        ends: d.ends, currentEnd: d.currentEnd, totalScore: d.totalScore,
+        halfScore: d.halfScore, endResults: d.endResults,
+        timerTotal: d.timerTotal, timerElimArrow: d.timerElimArrow,
+        elimOpponentMean: d.elimOpponentMean, elimOpponentBest: d.elimOpponentBest,
+        elimOpponentStd: d.elimOpponentStd,
+        elimMyPts: d.elimMyPts, elimOppPts: d.elimOppPts,
+        elimMatchOver: d.elimMatchOver, elimMatchWon: d.elimMatchWon,
+        note: d.note, trainingStart: this._trainingStart || null,
+        savedAt: Date.now(),
+      })
+    } catch (e) { handleErr('training.snapshot', e) }
+  },
+
+  _clearActive() {
+    try { wx.removeStorageSync(this.ACTIVE_KEY) } catch (e) {}
+  },
+
+  // onLoad 调用：有未完成存档则弹窗问是否恢复
+  _checkRecover() {
+    let a = null
+    try { a = wx.getStorageSync(this.ACTIVE_KEY) } catch (e) { return }
+    if (!a || !a.ends || a.step < 3 || a.step > 5) return
+    if (!a.savedAt || Date.now() - a.savedAt > this.ACTIVE_TTL) { this._clearActive(); return }
+    const recorded = (a.endResults || []).length
+    wx.showModal({
+      title: '继续上次训练？',
+      content: `检测到一组未完成的训练（已记录 ${recorded} ${a.endUnit || '组'}），是否恢复继续？`,
+      confirmText: '继续', cancelText: '放弃',
+      success: r => {
+        if (r.confirm) this._restoreActive(a)
+        else this._clearActive()
+      },
+    })
+  },
+
+  _restoreActive(a) {
+    this._trainingStart = a.trainingStart || Date.now()
+    // 清掉残留的计时器锚点，避免 onShow 拿旧 targetTime 误判归零
+    wx.removeStorageSync('training_timer')
+    wx.removeStorageSync('release_timer')
+
+    const arrowsPerEnd = a.arrowsPerEnd
+    const ends = Array.isArray(a.ends) ? a.ends.map(e => Array.isArray(e) ? e : []) : []
+    let step = a.step
+    // 归一化 currentEnd：一致态下 endResults.length === currentEnd；
+    // 若被「精彩时刻/淘汰赛弹层」中途回收，endResults 会多一条 → 据此自动前进一组，
+    // 既不丢已完成的那组，也不会重复记分 / 重复计成就。
+    let currentEnd = step === 3 ? (a.endResults || []).length : a.currentEnd
+    if (step === 3 && (currentEnd >= a.totalEnds || a.elimMatchOver)) step = 5
+    if (currentEnd >= ends.length) currentEnd = Math.max(0, ends.length - 1)
+    const cur = ends[currentEnd] || []
+    const totalScore = ends.flat().reduce((s, x) => s + SCORE_VAL(x), 0)
+
+    this.setData({
+      step,
+      bowType: a.bowType, distance: a.distance, targetSize: a.targetSize, mode: a.mode,
+      customEnds: a.customEnds, customArrowsPerEnd: a.customArrowsPerEnd,
+      customTimeLimit: a.customTimeLimit,
+      customTimeLimitLabel: fmtTimeLabel(a.customTimeLimit || 180),
+      elimDifficulty: a.elimDifficulty,
+      totalEnds: a.totalEnds, arrowsPerEnd, endUnit: a.endUnit,
+      ends, currentEnd, totalScore, halfScore: a.halfScore || 0,
+      endTotal: cur.reduce((s, x) => s + SCORE_VAL(x), 0),
+      isEndDone: cur.length === arrowsPerEnd,
+      endSlots: this._buildSlots(cur, arrowsPerEnd),
+      endResults: a.endResults || [],
+      // 计时器恢复为暂停态：不猜剩余时间，由用户手动点开始
+      timerTotal: a.timerTotal || 0, timerSecs: a.timerTotal || 0,
+      timerPct: 100, timerDisplay: fmtSecs(a.timerTotal || 0),
+      timerState: 'normal', timerRunning: false, timerElimArrow: !!a.timerElimArrow,
+      elimOpponentMean: a.elimOpponentMean || 21, elimOpponentBest: a.elimOpponentBest || 24,
+      elimOpponentStd: a.elimOpponentStd || 3,
+      elimMyPts: a.elimMyPts || 0, elimOppPts: a.elimOppPts || 0,
+      elimMatchOver: !!a.elimMatchOver, elimMatchWon: a.elimMatchWon,
+      showElimResult: false, elimLastSet: null,
+      showMoment: false, momentType: '', isPB: false,
+      note: a.note || '',
+    })
+    // 恢复后立即重存一份，刷新 savedAt
+    this._snapshotActive()
   },
 
   // ── 参数设置 ────────────────────────────────────────────────────
@@ -274,10 +380,14 @@ Page({
       const bowLabel = BOW_LABEL[this.data.bowType] || this.data.bowType
       const history = wx.getStorageSync('training_history') || []
       const oppLevel = calcOpponentLevel(history, this.data.distance, bowLabel)
-      const DIFF_OFFSET = { easy: -3, normal: 0, hard: 3 }
-      const offset = DIFF_OFFSET[this.data.elimDifficulty] || 0
+      // 表现偏置（每箭环·×3 换算成一组）：normal 让对手略高于你的平均，贴近「更好的自己」；
+      // easy 让分、hard 挑战。决胜局另切到「最强的自己」(best)。
+      const BIAS_PER_ARROW = { easy: -0.5, normal: 0.4, hard: 1.1 }
+      const bias = (BIAS_PER_ARROW[this.data.elimDifficulty] ?? 0.4) * 3
+      const clamp = v => Math.max(3, Math.min(30, Math.round(v * 10) / 10))
       elimInit = {
-        elimOpponentMean: Math.max(3, oppLevel.mean + offset),
+        elimOpponentMean: clamp(oppLevel.mean + bias),
+        elimOpponentBest: clamp(oppLevel.best + bias),  // 决胜局用
         elimOpponentStd: oppLevel.std,
         elimMyPts: 0, elimOppPts: 0,
         showElimResult: false, elimLastSet: null,
@@ -296,6 +406,7 @@ Page({
       timerState: 'normal', timerRunning: false, timerElimArrow,
       ...elimInit,
     })
+    this._snapshotActive()  // 开局即存档，后续每步增量更新
   },
 
   // ── 热身 ────────────────────────────────────────────────────────
@@ -328,11 +439,13 @@ Page({
     if (this._releaseTimer) { clearInterval(this._releaseTimer); this._releaseTimer = null }
     this._releaseTarget = Date.now() + this.data.releaseSecs * 1000
     wx.setStorageSync('release_timer', { targetTime: this._releaseTarget })
+    this._lastTickSec = null
     this._releaseTimer = setInterval(() => {
       const s   = Math.max(0, Math.round((this._releaseTarget - Date.now()) / 1000))
       const pct = Math.round(s / 300 * 100)
       const st  = s <= 15 ? 'critical' : s <= 60 ? 'warning' : 'normal'
       this.setData({ releaseSecs: s, releasePct: pct, releaseDisplay: fmtSecs(s), releaseState: st, releaseRunning: s > 0 })
+      this._tickSound(s)
       if (s === 0) {
         this._clearReleaseTimer()
         wx.vibrateLong && wx.vibrateLong()
@@ -383,6 +496,7 @@ Page({
     })
     // 排名赛/自定义：完成一组自动暂停计时
     if (isEndDone && !timerElimArrow) this._clearTimer()
+    this._snapshotActive()  // 每记/删一支箭都落盘
   },
 
   _buildSlots(arrows, n) {
@@ -456,6 +570,7 @@ Page({
       return
     }
     this._proceedNextEnd(next, newResults, mode, totalScore, totalEnds, arrowsPerEnd, timerElimArrow)
+    this._snapshotActive()
   },
 
   _proceedNextEnd(next, newResults, mode, totalScore, totalEnds, arrowsPerEnd, timerElimArrow) {
@@ -466,10 +581,13 @@ Page({
     }
 
     if (mode === 'elimination') {
-      const { elimOpponentMean, elimOpponentStd, elimMyPts, elimOppPts } = this.data
+      const { elimOpponentMean, elimOpponentBest, elimOpponentStd, elimMyPts, elimOppPts } = this.data
       const lastResult = newResults[newResults.length - 1]
       const myScore  = lastResult.total
-      const oppScore = Math.round(Math.max(0, Math.min(arrowsPerEnd * 10, randNormal(elimOpponentMean, elimOpponentStd))))
+      // 决胜局（任一方已 5 分、本局可终结；或打到最后一局）→ 对手切到「最强的自己」
+      const isDecider = elimMyPts >= 5 || elimOppPts >= 5 || newResults.length >= totalEnds
+      const oppMean  = isDecider ? (elimOpponentBest || elimOpponentMean) : elimOpponentMean
+      const oppScore = Math.round(Math.max(0, Math.min(arrowsPerEnd * 10, randNormal(oppMean, elimOpponentStd))))
 
       let myPtsGain = 0, oppPtsGain = 0
       if (myScore > oppScore)       { myPtsGain = 2 }
@@ -551,6 +669,7 @@ Page({
       _pendingContinue = null
       fn()
     }
+    this._snapshotActive()
   },
 
   changeElimDifficulty(e) {
@@ -564,6 +683,7 @@ Page({
       _pendingElimResult = null
       fn()
     }
+    this._snapshotActive()
   },
 
   // 渲染「精彩时刻」分享图 → 保存到相册
@@ -747,6 +867,7 @@ Page({
 
   onNoteInput(e) {
     this.setData({ note: e.detail.value })
+    this._snapshotActive()
   },
 
   finishTraining() {
@@ -798,6 +919,7 @@ Page({
       })
     })
 
+    this._clearActive()  // 已落库（本地+云端），清掉进行中存档
     wx.navigateBack()
   },
 
@@ -808,6 +930,7 @@ Page({
     })
     this._resetTimer()
     if (this.data.timerElimArrow) this._startTimer()
+    this._snapshotActive()
   },
 
   tapTimer() {
@@ -823,7 +946,7 @@ Page({
     if (step === 6) { this._clearReleaseTimer(); this.setData({ step: 0 }); return }
     wx.showModal({
       title: '退出训练', content: '当前训练记录将不保存，确认退出？',
-      success: r => { if (r.confirm) { this._clearTimer(); wx.navigateBack() } },
+      success: r => { if (r.confirm) { this._clearTimer(); this._clearActive(); wx.navigateBack() } },
     })
   },
 
@@ -838,11 +961,13 @@ Page({
       timerTotal: this.data.timerTotal,
       timerElimArrow: this.data.timerElimArrow,
     })
+    this._lastTickSec = null
     this._timer = setInterval(() => {
       const s   = Math.max(0, Math.round((this._timerTarget - Date.now()) / 1000))
       const pct = Math.round(s / this.data.timerTotal * 100)
       const st  = this._timerState(s, this.data.timerTotal)
       this.setData({ timerSecs: s, timerPct: pct, timerState: st, timerDisplay: fmtSecs(s) })
+      this._tickSound(s)
       if (s === 0) {
         this._clearTimer()
         wx.vibrateShort && wx.vibrateShort({ type: 'heavy' })
@@ -865,6 +990,16 @@ Page({
       timerSecs: total, timerPct: 100,
       timerDisplay: fmtSecs(total), timerState: 'normal',
     })
+  },
+
+  // 倒计时提示音：剩 10 秒一声、最后 5 秒每秒催促、归零长鸣。
+  // 500ms 一跳、s 为整秒会重复，靠 _lastTickSec 去重；s 跌出窗口外不响。
+  // 记分与撒放两个计时器互斥（撒放是训练前热身步骤），共用此方法即可。
+  _tickSound(s) {
+    if (s === this._lastTickSec) return
+    this._lastTickSec = s
+    if (s === 0) { sfx.end(); return }
+    if (s === 10 || (s >= 1 && s <= 5)) sfx.beep()
   },
 
   _timerState(s, total) {
