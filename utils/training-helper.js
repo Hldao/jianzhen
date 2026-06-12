@@ -32,19 +32,31 @@ const SLOT_COLORS = {
   'M':  { bg: '#9CA3AF', text: '#fff' },
 }
 
-// 淘汰赛虚拟对手：从历史记录（同距离+弓种，3 箭组）拟合均值 + 标准差
-// 历史不足 6 组时返回默认 mean=21, std=3（业余 6-7 环水平）
+// 淘汰赛虚拟对手：用历史「每箭平均环值」拟合对手水平，再 ×3 换算成一组(3箭)。
+// 改自旧版「只取 3 箭组」——强人平时打 6 箭排位、3 箭组样本太少会落回默认值导致对手过弱。
+// 现在统计所有组的每箭环值（优先同距离+弓种，不足放宽到全部历史），既有样本又随水平成长。
+// 返回（均按一组 3 箭计）：
+//   mean — 平均水平   std — 一组的波动   best — 「最强的自己」（状态好时的水平，供决胜局用）
+// 历史几乎为空时返回 mean=21/std=3/best=24（业余 7 环水平兜底）。
 function calcOpponentLevel(history, distance, bowLabel) {
-  const relevant = history
-    .filter(r => r.endResults && r.distance === distance && r.bowType === bowLabel)
-    .flatMap(r => r.endResults.filter(e => e.arrows && e.arrows.length === 3))
-  if (relevant.length < 6) return { mean: 21, std: 3, hasHistory: false }
-  const scores = relevant.map(e => e.total)
-  const mean = scores.reduce((a, b) => a + b, 0) / scores.length
-  const variance = scores.reduce((a, b) => a + (b - mean) ** 2, 0) / scores.length
+  const arrowsOf = recs => (recs || [])
+    .filter(r => r.endResults)
+    .flatMap(r => r.endResults)
+    .flatMap(e => (e.arrows || []).map(SCORE_VAL))
+
+  let vals = arrowsOf(history.filter(r => r.distance === distance && r.bowType === bowLabel))
+  if (vals.length < 18) vals = arrowsOf(history)  // 同距离弓种不足 6 组(18箭) → 放宽到全部
+  if (vals.length < 6) return { mean: 21, std: 3, best: 24, hasHistory: false }
+
+  const n   = vals.length
+  const avg = vals.reduce((a, b) => a + b, 0) / n                         // 每箭平均环
+  const aStd = Math.sqrt(vals.reduce((a, b) => a + (b - avg) ** 2, 0) / n) // 每箭标准差
+  const bestArrow = Math.min(10, avg + 0.6 * aStd)                        // 状态好时的每箭水平
+  const r1 = x => Math.round(x * 10) / 10
   return {
-    mean: Math.round(mean * 10) / 10,
-    std:  Math.round(Math.max(1.5, Math.sqrt(variance)) * 10) / 10,
+    mean: r1(avg * 3),
+    std:  r1(Math.max(1.5, aStd * Math.sqrt(3))),  // 3 箭独立求和，标准差 ×√3
+    best: r1(bestArrow * 3),
     hasHistory: true,
   }
 }
